@@ -1,0 +1,7 @@
+name: receipts
+version: 1.0.0
+description: "Session flight recorder. Turns a Hermes session, a date range, or a kanban card's evidence chain into one self-contained, offline HTML receipt: the original ask, every tool call as a timed node, failures and retries exactly as recorded, per-model token spend, and the recorded cost. Reads the local session store only — no network, no credentials, no new dependencies."
+author: "Ryan O'Mara"
+provides_tools:
+  - receipts_build
+requires_hermes: ">=0.19"

@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.manifest.json
+receipts-*.html
+fixtures/demo-state.db
+fixtures/*.db-wal
+fixtures/*.db-shm
+.pytest_cache/
+.DS_Store
+Thumbs.db
+build/
+dist/
+*.mp4
+samples/*.mp4
