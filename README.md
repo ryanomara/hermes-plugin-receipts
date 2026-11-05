@@ -87,6 +87,16 @@ These are product rules, enforced by tests in `tests/test_receipts.py`:
 6. **Provenance is on the page.** Store path, size, write time, session id, schema version, render time.
 7. **Secrets are masked.** Credential-shaped strings are redacted before rendering.
 
+## Privacy — read before you share
+
+A receipt contains the session's actual content: your prompts, the agent's replies, tool arguments, and command output. Secrets are masked (rule 7), but that masking is pattern-based — it is a safety net, not a guarantee.
+
+- **Review before sharing.** Open the receipt and search it for names, file paths, customer data or anything you would not publish.
+- **The plugin never transmits anything.** There is no network code in it; the artifact is written to disk and opened locally.
+- **`--json` is the machine-readable form**; the HTML is written for a human reader, so it carries the full text.
+
+If you plan to send receipts to clients or attach them to tickets, generate them from a session you are comfortable exposing, and keep a redaction pass in your workflow.
+
 ## The artifact
 
 Single HTML file, ~20–220 KB depending on session length:

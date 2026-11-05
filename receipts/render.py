@@ -809,6 +809,22 @@ def render_html(manifest: dict) -> str:
     )
 
 
+def render_document(title: str, body: str, extra_css: str = "") -> str:
+    """Wrap an arbitrary body in the same instrument-panel document shell.
+
+    Used by the rollup digest so it shares the receipt's visual language (and
+    its offline/no-network guarantees) without duplicating 200 lines of CSS.
+    No JavaScript is attached: a digest is a document, not a control surface.
+    """
+    return (
+        "<!doctype html>\n"
+        '<html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f"<title>Receipts · {esc(title)}</title>"
+        f"<style>{_CSS}{extra_css}</style></head><body><div class=\"wrap\">{body}</div></body></html>\n"
+    )
+
+
 def render_json(manifest: dict) -> str:
     """The same manifest as JSON, for anyone who wants the data rather than the document."""
     return json.dumps(manifest, indent=2, ensure_ascii=False, default=str)

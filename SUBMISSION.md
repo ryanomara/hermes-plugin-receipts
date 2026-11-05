@@ -1,8 +1,9 @@
 # Submission packet — Receipts
 
-Everything here is ready for Ryan to post. The X post and the typeform are
-human-gated by the card's acceptance clause (1); a worker cannot and must not
-file them.
+This packet is complete except for the steps that require a human: creating the
+public repository, pinning its SHA, opening the catalog PR, posting the demo and
+filing the form. Everything else — install line, captions, beat sheet, catalog
+entry, PR body — is written and verified.
 
 ---
 
@@ -46,28 +47,31 @@ hermes receipts latest
 
 Both are under 280 characters when the code line is counted as 23.
 
-## 4. Demo beat sheet — as delivered (`demo/receipts-demo.mp4`, 46.3 s)
+## 4. Demo — as delivered (`demo/receipts-demo-v2.mp4`, 52.9 s)
 
-1920×1080, H.264, 1.5 MB. Real captures of the rendered artifact (actual scroll
-positions, the artifact's own *jump to first failure* control) plus title and
-terminal cards drawn from the real CLI output. Synthetic fixture only.
+2160×1214, H.264 + AAC, 2.9 MB. Real captures of the rendered artifact (actual
+scroll positions, the artifact's own *jump to first failure* control) plus title,
+terminal, install and value-prop cards drawn from the real CLI output. Synthetic
+fixture only. Narration is six recorded lines; the music bed is an original
+big-beat composition generated for this demo (seed recorded in `demo/audio/*.gen.json`).
 
-| Time | On screen |
-|---|---|
-| 0:00–0:03 | Title card — *Receipts, a session flight recorder* |
-| 0:03–0:05 | Terminal: `hermes receipts latest` typed |
-| 0:05–0:10 | CLI output: path, 18 tool calls, 4 failures, 3 retries, tokens, cost, 38 KB |
-| 0:10–0:14 | Artifact opens: title, six-cell instrument strip, **"1 failure never resolved"** band |
-| 0:14–0:17 | Scroll to the ask, verbatim |
-| 0:17–0:22 | Timeline: parallel reads, then `#02 terminal` **FAILED / RETRIED ×2 / EXIT 1** in red |
-| 0:22–0:25 | Scroll through the retry chain to the unrecovered `git push` failure |
-| 0:25–0:30 | *Jump to first failure* → node highlighted, error panel with the 403 |
-| 0:30–0:38 | Spend table per model, reconciliation **Δ0 ✓** |
-| 0:38–0:41 | Install line |
-| 0:41–0:46 | End card — *every agent user has unshowable work* |
+Scene order:
+
+1. Title card — *Receipts, a session flight recorder*
+2. Terminal: `hermes receipts latest` typed
+3. CLI output: path, 18 tool calls, 4 failures, 3 retries, tokens, cost, 38 KB
+4. Artifact opens: title, six-cell instrument strip, **"1 failure never resolved"** band
+5. Scroll to the ask, verbatim
+6. Timeline: parallel reads, then `#02 terminal` **FAILED / RETRIED ×2 / EXIT 1** in red
+7. Retry chain through to the unrecovered `git push` failure
+8. *Jump to first failure* → node highlighted, error panel with the 403
+9. Spend table per model, reconciliation **Δ0 ✓**
+10. Install line
+11. **Value prop** — *Showable work · Honest failures · Recorded cost*
+12. End card — *every agent user has unshowable work*
 
 If a longer cut is wanted for the typeform, the raw captures in `demo/frames/`
-regenerate it via `python demo/build_demo.py`; raising the hold durations in
+regenerate it via `python demo/build_demo_v2.py`; raising the hold durations in
 `seq` past ~90 s is the only thing that would breach the cap.
 
 
@@ -126,19 +130,20 @@ and opens offline.
 Pinned at `<SHA>`.
 ```
 
-## 6. What only Ryan can do
+## 6. Steps that need a human
 
 - [ ] Create the public repo and push this tree (a catalog entry needs a public
       40-hex SHA pin; nothing here can supply that offline).
 - [ ] Fill `repo` + `sha` above, open the PR against `NousResearch/hermes-agent`.
-- [ ] Record the demo from the beat sheet (or approve the file in `demo/`).
+- [ ] Approve the demo file in `demo/` (or re-record from the scene order above).
 - [ ] Post on X with one of the captions, tagging `@NousResearch`.
 - [ ] File the typeform.
 
 ## 7. Blockers found (not guessed)
 
-1. **No `gh` CLI on this machine** (`gh: command not found`) and no configured
-   Git remote, so the catalog PR cannot be opened from here.
+1. **No `gh` CLI on this machine** (`gh: command not found`). The GitHub API is
+   reachable with the stored credential, so the PR can be opened via API once the
+   public repo exists — `gh` is convenient, not required.
 2. **No public repo yet**, so the mandatory 40-hex SHA pin for
    `plugin-catalog/receipts.yaml` cannot exist. The entry above is complete
    except for `repo` and `sha`.

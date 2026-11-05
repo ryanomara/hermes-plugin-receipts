@@ -25,3 +25,5 @@ demo/concat.txt
 demo/audio/*.wav
 demo/_video_v2.mp4
 demo/_mix_v2.wav
+
+data/scratch/

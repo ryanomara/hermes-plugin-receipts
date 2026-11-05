@@ -10,9 +10,19 @@ Public API::
     html = render_html(build_manifest("latest"))
 """
 
-__version__ = "1.0.0"
-__all__ = ["__version__", "build_manifest", "render_html", "render_json", "main"]
+__version__ = "1.1.0"
+__all__ = [
+    "__version__",
+    "build_manifest",
+    "build_rollup",
+    "render_html",
+    "render_rollup",
+    "render_json",
+    "main",
+]
 
 from .manifest import build_manifest  # noqa: E402
 from .render import render_html, render_json  # noqa: E402
+from .rollup import build_rollup  # noqa: E402
+from .render_rollup import render_rollup  # noqa: E402
 from .cli import main  # noqa: E402

@@ -29,6 +29,11 @@ def default_out_path(manifest: dict) -> Path:
     return Path.cwd() / f"receipts-{short}.html"
 
 
+def default_rollup_path(payload: dict) -> Path:
+    window = payload["window"]
+    return Path.cwd() / f"rollup-{window['start'][:10]}_{window['end'][:10]}.html"
+
+
 def _atomic_write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     handle, tmp = tempfile.mkstemp(prefix=".receipts-", suffix=path.suffix or ".html", dir=str(path.parent))
@@ -51,15 +56,25 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         nargs="?",
         default=None,
         help="session id or prefix, 'latest', a date (2026-11-01), a range "
-             "(2026-11-01..2026-11-03), or a kanban card id (t_ab12cd34). Default: latest",
+             "(2026-11-01..2026-11-03), a kanban card id (t_ab12cd34), or 'rollup' "
+             "for the weekly process digest. Default: latest",
     )
-    parser.add_argument("-o", "--out", help="output .html path (default: ./receipts-<session>.html)")
+    parser.add_argument("-o", "--out", help="output .html path (default: ./receipts-<session>.html); "
+                                            "for rollup, the base path without extension")
     parser.add_argument("--db", help="path to state.db (default: the active Hermes home)")
-    parser.add_argument("--json", action="store_true", help="print the manifest JSON instead of writing HTML")
+    parser.add_argument("--json", action="store_true", help="print the manifest/rollup JSON instead of writing HTML")
     parser.add_argument("--list", action="store_true", help="list recent sessions and exit")
     parser.add_argument("--open", action="store_true", help="open the artifact in the default browser")
     parser.add_argument("-q", "--quiet", action="store_true", help="only print the artifact path")
     parser.add_argument("--limit", type=int, default=15, help="rows for --list (default 15)")
+    # rollup-only
+    parser.add_argument("--since", help="rollup window: 7d, 36h, 2w, or a date (2026-10-30)")
+    parser.add_argument("--board", help="rollup: restrict to one kanban board slug (e.g. agency)")
+    parser.add_argument("--as-of", dest="as_of",
+                        help="rollup: pin the window end (ISO datetime or date) — makes a run byte-stable")
+    parser.add_argument("--kanban-home", dest="kanban_home",
+                        help="rollup: kanban home holding boards/<slug>/kanban.db "
+                             "(default: <hermes home>/kanban)")
     return parser
 
 
@@ -89,11 +104,72 @@ def _list_sessions(db: Path | None, limit: int) -> int:
     return 0
 
 
+def run_rollup(args: argparse.Namespace, db: Path) -> int:
+    """`receipts rollup --since 7d [--board <slug>]` — the weekly digest."""
+    from .rollup import build_rollup, render_json as render_rollup_json
+    from .render_rollup import render_rollup
+
+    kanban = Path(args.kanban_home).expanduser() if getattr(args, "kanban_home", None) else None
+    payload = build_rollup(
+        since=getattr(args, "since", None) or "7d",
+        board=getattr(args, "board", None),
+        as_of=getattr(args, "as_of", None),
+        db_path=db,
+        kanban_home_path=kanban,
+    )
+
+    if getattr(args, "json", False):
+        print(render_rollup_json(payload), end="")
+        return 0
+
+    html = render_rollup(payload)
+    out = Path(args.out).expanduser() if getattr(args, "out", None) else default_rollup_path(payload)
+    out = out if out.is_absolute() else (Path.cwd() / out)
+    stem = out.with_suffix("") if out.suffix.lower() in (".html", ".json") else out
+    html_path = stem.with_suffix(".html")
+    json_path = stem.with_suffix(".json")
+    _atomic_write(html_path, html)
+    _atomic_write(json_path, render_rollup_json(payload))
+
+    if getattr(args, "quiet", False):
+        print(html_path)
+    else:
+        cur = payload["current"]
+        rate = (cur["failures"] / cur["tool_calls"] * 100.0) if cur["tool_calls"] else 0.0
+        top = cur["taxonomy"][0] if cur["taxonomy"] else None
+        print(f"rollup → {html_path}")
+        print(f"         {json_path}")
+        print(f"  {payload['window']['week']} · {cur['sessions']} session(s) · "
+              f"{cur['tool_calls']:,} tool calls · {cur['failures']:,} failure(s) ({rate:.1f}%) · "
+              f"{cur['retries']:,} retry(ies)")
+        print(f"  cost ${(cur['cost']['usage_usd'] or 0):.4f} · "
+              f"top class {top['class'] if top else '—'}"
+              f"{' ×' + str(top['count']) if top else ''} · "
+              f"{(payload.get('stability') or {}).get('digest', '')}")
+
+    if getattr(args, "open", False):
+        try:
+            import webbrowser
+
+            webbrowser.open(html_path.resolve().as_uri())
+        except Exception:
+            pass
+    return 0
+
+
 def run(args: argparse.Namespace) -> int:
     db = Path(args.db).expanduser() if getattr(args, "db", None) else state_db_path()
 
     if getattr(args, "list", False):
         return _list_sessions(db, getattr(args, "limit", 15))
+
+    if (getattr(args, "target", None) or "").strip().lower() == "rollup":
+        return run_rollup(args, db)
+    if any(getattr(args, flag, None) for flag in ("since", "board", "as_of", "kanban_home")):
+        raise ReceiptsError(
+            "--since / --board / --as-of / --kanban-home belong to the rollup target. "
+            "Try: receipts rollup --since 7d --board agency"
+        )
 
     manifest = build_manifest(getattr(args, "target", None), db_path=db)
 
