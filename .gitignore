@@ -15,3 +15,10 @@ build/
 dist/
 *.mp4
 samples/*.mp4
+
+# demo working files — the delivered video is tracked, the raw captures are not
+demo/frames/
+demo/cards/
+demo/check/
+demo/concat.txt
+
