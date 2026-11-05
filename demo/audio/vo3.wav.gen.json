@@ -1,0 +1,13 @@
+{
+  "prompt": "Token spend per model, recorded cost, and the path the work actually took.",
+  "prompt_sha256": "fe35d7a7b3fef6f305b08c79963b56b2fd4b435c2296d34bd01bc976c8d9585c",
+  "seed_requested": 1003,
+  "params": {
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9c/Kq8GWBgpio4AyWN75Xwkk_UrgOW5OZ.wav",
+  "sha256": "62c29b48334d74d281ba7b3ad615b76c687845392afb7b85d3bdde2f533b8a04",
+  "bytes": 253828,
+  "created_at": "2026-11-06T00:32:51+0100"
+}

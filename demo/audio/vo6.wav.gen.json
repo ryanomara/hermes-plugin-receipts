@@ -1,0 +1,13 @@
+{
+  "prompt": "Receipts. Because work you can't show is work nobody trusts.",
+  "prompt_sha256": "7e6a2dd66a18ed2c7d43160f1199a61aec04137646fd1353f7f702e6b7379f3e",
+  "seed_requested": 1006,
+  "params": {
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9d/-s-W23Yq-US7yWmRxeyME_s8IKZ92S.wav",
+  "sha256": "82a254ce294b2f83fd58b4e15e863fa495ff9858713001ce43984ba3263bdd6a",
+  "bytes": 208230,
+  "created_at": "2026-11-06T00:32:57+0100"
+}

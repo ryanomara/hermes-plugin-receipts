@@ -1,0 +1,13 @@
+{
+  "prompt": "No server. No network. One HTML file that opens anywhere.",
+  "prompt_sha256": "200cbd89d96e28ad55afda28fef34362d5d8a1fe3b8fbfbdf132119024ac2c8f",
+  "seed_requested": 1004,
+  "params": {
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9d/7bApy7aha_FUIcLisCqFs_H5TLvzrC.wav",
+  "sha256": "57bf9f3b1dd7f0c287490da8fce163d2a653735194c415eb00679edf921e9b80",
+  "bytes": 262228,
+  "created_at": "2026-11-06T00:32:53+0100"
+}

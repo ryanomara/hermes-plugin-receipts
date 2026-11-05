@@ -1,0 +1,14 @@
+{
+  "prompt": "Original big-beat electronic instrumental, 124 BPM, hard breakbeat drums, distorted analog synth bass riff, filtered arpeggiated lead, tape-saturated drum bus, occasional vinyl grit, driving and confident, no vocals, instrumental only, clean ending",
+  "prompt_sha256": "91e92f878cd4a028452905553f2589f06d4f4454c040864f4a88f4621299fdc3",
+  "seed_requested": 424242,
+  "params": {
+    "seconds_total": 48,
+    "guidance_scale": 3,
+    "num_inference_steps": 8
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9e/CKZPwnw_JMu7XOZpmOm9i_UDRmyL9R.wav",
+  "sha256": "f7774e206f8e365401222f68b4d2314199353fb285f110efb82432808b79eb14",
+  "bytes": 8481028,
+  "created_at": "2026-11-06T00:33:11+0100"
+}

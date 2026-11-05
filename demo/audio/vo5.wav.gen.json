@@ -1,0 +1,13 @@
+{
+  "prompt": "Send it to a client. Attach it to a ticket. Keep it as evidence.",
+  "prompt_sha256": "7079a4a8f2fab88a6e16ba739e0b082424ddba72983b0431b55824d6d14ddc09",
+  "seed_requested": 1005,
+  "params": {
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9d/DB6zzwoEA1nNZ9gOvIsY9_EIzkNhBM.wav",
+  "sha256": "298c24aad3bfc3f32b9d07b2d27625e2cb278c34cee674248c0de6b82ada3a10",
+  "bytes": 220230,
+  "created_at": "2026-11-06T00:32:55+0100"
+}

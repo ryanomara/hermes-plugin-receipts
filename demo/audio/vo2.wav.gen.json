@@ -1,0 +1,13 @@
+{
+  "prompt": "Receipts turns a Hermes session into one document: the ask, every tool call, every failure, every retry.",
+  "prompt_sha256": "70463cfa97d8ccc980844e5c2e9cad81cf38cc7666d58185d2bdda3fecd99070",
+  "seed_requested": 1002,
+  "params": {
+    "voice": "af_heart",
+    "speed": 1.0
+  },
+  "output_url": "https://v3b.fal.media/files/b/0ab14e9c/L-YCs1TUH2KCR3H9WXgtX_f5njkjy2.wav",
+  "sha256": "72ce9a0af6abdbf3291ede364f7e582d7488c5e5eab8528a0f930a0867d1228d",
+  "bytes": 367828,
+  "created_at": "2026-11-06T00:32:49+0100"
+}
