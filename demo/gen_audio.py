@@ -15,12 +15,12 @@ import subprocess
 import time
 from pathlib import Path
 
-ROOT = Path(r"C:/Users/ryoma/Projects/hermes-plugin-receipts")
+ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "demo" / "audio"
 OUT.mkdir(parents=True, exist_ok=True)
 
 # FAL_KEY from the Hermes .env, never printed
-for line in Path(r"C:/Users/ryoma/AppData/Local/hermes/.env").read_text().splitlines():
+for line in Path.home() / "AppData" / "Local" / "hermes" / ".env".read_text().splitlines():
     if line.startswith("FAL_KEY="):
         os.environ["FAL_KEY"] = line.split("=", 1)[1].strip()
         break

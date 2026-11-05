@@ -172,11 +172,15 @@ def build(out_dir: str | Path) -> dict:
     aaa.result("c4", "patch", {"files_modified": ["src/cart/discount.py"], "verified": True}, 0.3)
     aaa.calls([("c5", "terminal", {"command": "git push origin fix/rounding"})])
     aaa.result("c5", "terminal", {
-        "output": "remote: Permission denied\nfatal: error: 403\n", "exit_code": 128, "error": None}, 1.2)
+        "output": "fatal: Authentication failed for 'https://github.com/demo/repo.git/'\n",
+        "exit_code": 128, "error": None}, 1.2)
     aaa.calls([("c6", "read_file", {"path": "src/cart/discount.py"})])
     aaa.result("c6", "read_file", {"content": "def pct():\n    pass\n", "total_lines": 2}, 0.2)
     aaa.calls([("c7", "write_file", {"path": "src/cart/discount.py"})])
     aaa.result("c7", "write_file", {"bytes_written": 244, "verified": True}, 0.5)
+    # A human-wait tool: long wall-clock, but it must never rank as a slow tool.
+    aaa.calls([("c8", "clarify", {"question": "Push the branch yourself?"})])
+    aaa.result("c8", "clarify", {"answer": "No", "status": "answered"}, 5000.0)
     aaa.answer("Fixed the rounding bug; the push was refused and was not retried.")
     aaa.add_usage("m-one", "prov-a", calls=12, tin=40_000, tout=8_000, cost=0.500000)
     aaa.recorded_cost = 0.500000
