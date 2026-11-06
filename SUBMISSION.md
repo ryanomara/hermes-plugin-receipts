@@ -85,14 +85,16 @@ name: receipts
 repo: <PUBLIC_REPO_URL>
 sha: <40-HEX-SHA-OF-TAGGED-COMMIT>
 title: Receipts
-description: 'Session flight recorder. Turns a Hermes session, a date range, or a kanban card evidence chain
-  into one self-contained offline HTML receipt: the original ask, every tool call as a timed node, failures and
-  retries exactly as recorded, per-model token spend, and the recorded cost. Reads the local session store only;
-  no network, no credentials, no new dependencies.'
+description: 'Session flight recorder + weekly process digest. Turns a Hermes session, a date range, or a kanban
+  card evidence chain into one self-contained offline HTML receipt: the original ask, every tool call as a timed
+  node, failures and retries exactly as recorded, per-model token spend, and the recorded cost. `receipts rollup
+  --since 7d` aggregates a window into a deterministic digest: failure taxonomy, cost by model and card, slowest
+  tools by p50/p95, retry hotspots, and week-over-week deltas. Reads the local session store and kanban boards
+  only; no network, no credentials, no new dependencies.'
 maintainer: Ryan O'Mara
 tier: community
 category: observability
-version: "1.0.0"
+version: "1.1.0"
 docs_url: <PUBLIC_REPO_URL>#readme
 platforms: []
 capabilities:
@@ -118,14 +120,16 @@ a reconciliation delta.
 
 **Why it belongs in the catalog.** It is read-only against `state.db`, stdlib-only,
 and useful to anyone who has to show what an agent did — the artefact is portable
-and opens offline.
+and opens offline. `receipts rollup` extends the same store into a weekly process
+digest: deterministic failure taxonomy, cost by model and card, slow tools,
+retry hotspots, and week-over-week deltas.
 
 **Admission checks.**
 - `hermes plugins validate .` — passes every gate (manifest, capability probe,
   no tool collisions, security scan, no core override).
 - No self-updater, no network calls, no credentials.
 - Declared capabilities match registrations: `provides_tools: [receipts_build]`.
-- 30 stdlib tests: `python -m unittest discover -s tests`.
+- 75 stdlib tests: `python -m unittest discover -s tests`.
 
 Pinned at `<SHA>`.
 ```
@@ -159,3 +163,38 @@ Pinned at `<SHA>`.
 - Artifact: 0 external references, 0 console errors, filters functional.
 - Live gateway plugin directory untouched; all install tests ran in a scratch
   `HERMES_HOME`.
+
+## 9. v1.1 — rollup mode (2026-11-06)
+
+`receipts rollup --since 7d [--board <slug>]` writes one HTML + one JSON digest:
+a deterministic failure taxonomy, cost by model and card reconciled to receipts,
+slowest tools by p50/p95, retry hotspots, and week-over-week deltas.
+
+Verified:
+
+- `python -m unittest discover -s tests` → **75 tests, OK** (1 skipped: PyYAML is
+  absent from the bare interpreter; the test now skips as its docstring promised).
+- `hermes plugins validate .` → *Validation passed* (all gates).
+- **Byte-stability:** two runs over the pinned fixture window produce identical
+  JSON and HTML; `samples/rollup-demo.json` is rebuilt from the fixture inside
+  the test suite, so the committed sample is a checked claim.
+- **Real store, pinned window** (`--as-of 2026-11-06T01:00:00`): 288 sessions,
+  32,359 tool calls, 1,156 failures, 818 retries, $65.7338,
+  digest `sha256:db367be7677467c4f071139b8eba1d9b9fea26b26b4f048942fca07f8e053a8e`.
+- **Cron** `b2f1a5960d36` — `30 6 * * 1`, `--no-agent` script — ran through the
+  live scheduler on 2026-11-06 01:04 (`hermes cron runs` → *completed*), and
+  appended its line to `lifehack/docs/ops/receipts-rollup/run.log`.
+- **Gazette:** CONTENT DESK renders the digest's pre-formatted `desk_line` from
+  `lifehack/docs/ops/receipts-rollup/latest.json`. The digest script gained one
+  section and no formatting logic; the screenshot is
+  `docs/evidence/rollup/gazette-content-desk.png`.
+
+Not verified here:
+
+- A **fresh `HERMES_HOME` install** on this machine cannot bootstrap its Python
+  environment: the runtime's source-update step fails copying vendor conformance
+  files (`WinError 3`) before the plugin is reached. That is an environment
+  fault, not a plugin fault — `hermes plugins validate .` is green, the plugin
+  CLI parser path is covered by a test that parses `rollup …` through
+  `receipts.plugin._setup_cli`, and the live profile was deliberately left
+  unmodified (Receipts is not installed there).

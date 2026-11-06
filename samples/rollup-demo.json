@@ -1,0 +1,763 @@
+{
+  "schema_version": 1,
+  "kind": "rollup",
+  "tool_version": "1.1.0",
+  "board": null,
+  "window": {
+    "since": "7d",
+    "start": "2026-10-29T23:00:00Z",
+    "end": "2026-11-05T23:00:00Z",
+    "start_ts": 1793314800.0,
+    "end_ts": 1793919600.0,
+    "days": 7.0,
+    "label": "2026-10-29 → 2026-11-05",
+    "week": "2026-W45",
+    "previous_start": "2026-10-22T23:00:00Z",
+    "previous_end": "2026-10-29T23:00:00Z",
+    "previous_label": "2026-10-22 → 2026-10-29",
+    "previous_week": "2026-W44"
+  },
+  "source": {
+    "path": "fixtures\\.rollup-fixture\\state.db",
+    "exists": true,
+    "size_bytes": 40960,
+    "mtime": 1793923118.897998,
+    "kanban_home": "fixtures\\.rollup-fixture\\kanban"
+  },
+  "boards": [
+    {
+      "slug": "alpha",
+      "name": "Alpha board",
+      "cards": 3,
+      "error": null
+    },
+    {
+      "slug": "beta",
+      "name": "Beta board",
+      "cards": 1,
+      "error": null
+    }
+  ],
+  "scope": {
+    "sessions": 5,
+    "tool_calls": 16,
+    "distinct_tools": 6,
+    "distinct_cards": 3,
+    "previous_sessions": 2,
+    "previous_tool_calls": 3
+  },
+  "current": {
+    "window": {
+      "start": 1793314800.0,
+      "end": 1793919600.0,
+      "start_iso": "2026-10-29T23:00:00Z",
+      "end_iso": "2026-11-05T23:00:00Z",
+      "days": 7.0
+    },
+    "sessions": 5,
+    "tool_calls": 16,
+    "failures": 6,
+    "unverified": 2,
+    "unterminated": 0,
+    "retries": 3,
+    "retry_chains": 3,
+    "chains_recovered": 3,
+    "unresolved": 3,
+    "unattributed_retries": 0,
+    "unattributed_failures": 1,
+    "distinct_tools": 6,
+    "distinct_cards": 3,
+    "duration": {
+      "total_s": 31.4,
+      "p50_s": 0.4,
+      "p95_s": 7.95,
+      "max_s": 12.5
+    },
+    "cost": {
+      "usage_usd": 0.9,
+      "recorded_usd": 0.92,
+      "delta_usd": -0.02,
+      "sessions_with_usage": 4,
+      "sessions_without_usage": 1,
+      "sessions_without_usage_ids": [
+        "local-eee000"
+      ],
+      "attributed_usd": 0.85,
+      "unattributed_usd": 0.05,
+      "receipt_mismatches": [],
+      "receipt_mismatch_count": 0,
+      "statuses": [
+        "estimated"
+      ]
+    },
+    "taxonomy": [
+      {
+        "class": "auth",
+        "refined_from": null,
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-10-30T00:00:16Z",
+        "last_seen": "2026-10-30T00:00:16Z",
+        "tools": [
+          {
+            "tool": "terminal",
+            "count": 1
+          }
+        ],
+        "retried": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "example": {
+          "tool": "terminal",
+          "session": "local-aaa000",
+          "at": "2026-10-30T00:00:16Z",
+          "text": "fatal: Authentication failed for 'https://github.com/demo/repo.git/'"
+        }
+      },
+      {
+        "class": "guard_refusal",
+        "refined_from": null,
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-11-01T23:00:01Z",
+        "last_seen": "2026-11-01T23:00:01Z",
+        "tools": [
+          {
+            "tool": "write_file",
+            "count": 1
+          }
+        ],
+        "retried": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "example": {
+          "tool": "write_file",
+          "session": "local-ddd000",
+          "at": "2026-11-01T23:00:01Z",
+          "text": "Refusing to overwrite C:/demo/repo/index.html: not a file this agent wrote"
+        }
+      },
+      {
+        "class": "not_found",
+        "refined_from": null,
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-10-31T23:00:18Z",
+        "last_seen": "2026-10-31T23:00:18Z",
+        "tools": [
+          {
+            "tool": "read_file",
+            "count": 1
+          }
+        ],
+        "retried": 0,
+        "recovered": 0,
+        "unresolved": 1,
+        "example": {
+          "tool": "read_file",
+          "session": "local-bbb000",
+          "at": "2026-10-31T23:00:18Z",
+          "text": "FileNotFoundError: [Errno 2] No such file or directory: 'src/missing.py'"
+        }
+      },
+      {
+        "class": "patch_context",
+        "refined_from": "not_found",
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-10-30T00:00:14Z",
+        "last_seen": "2026-10-30T00:00:14Z",
+        "tools": [
+          {
+            "tool": "patch",
+            "count": 1
+          }
+        ],
+        "retried": 1,
+        "recovered": 1,
+        "unresolved": 0,
+        "example": {
+          "tool": "patch",
+          "session": "local-aaa000",
+          "at": "2026-10-30T00:00:14Z",
+          "text": "old_string not found in src/cart/discount.py"
+        }
+      },
+      {
+        "class": "test_failure",
+        "refined_from": "nonzero_exit",
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-10-30T00:00:01Z",
+        "last_seen": "2026-10-30T00:00:01Z",
+        "tools": [
+          {
+            "tool": "terminal",
+            "count": 1
+          }
+        ],
+        "retried": 1,
+        "recovered": 1,
+        "unresolved": 0,
+        "example": {
+          "tool": "terminal",
+          "session": "local-aaa000",
+          "at": "2026-10-30T00:00:01Z",
+          "text": "tests/test_checkout.py:41: AssertionError"
+        }
+      },
+      {
+        "class": "timeout",
+        "refined_from": null,
+        "count": 1,
+        "share_pct": 16.67,
+        "first_seen": "2026-10-31T23:00:01Z",
+        "last_seen": "2026-10-31T23:00:01Z",
+        "tools": [
+          {
+            "tool": "terminal",
+            "count": 1
+          }
+        ],
+        "retried": 1,
+        "recovered": 1,
+        "unresolved": 0,
+        "example": {
+          "tool": "terminal",
+          "session": "local-bbb000",
+          "at": "2026-10-31T23:00:01Z",
+          "text": "timed out after 420.0s"
+        }
+      }
+    ],
+    "by_model": [
+      {
+        "model": "m-one",
+        "providers": [
+          "prov-a"
+        ],
+        "api_calls": 14,
+        "input": 45000,
+        "output": 9000,
+        "cache_read": 0,
+        "cache_write": 0,
+        "reasoning": 0,
+        "cost_usd": 0.6,
+        "cost_status": "estimated"
+      },
+      {
+        "model": "m-two",
+        "providers": [
+          "prov-b"
+        ],
+        "api_calls": 6,
+        "input": 15000,
+        "output": 2500,
+        "cache_read": 0,
+        "cache_write": 0,
+        "reasoning": 0,
+        "cost_usd": 0.3,
+        "cost_status": "estimated"
+      }
+    ],
+    "by_card": [
+      {
+        "card": "t_a0000001",
+        "title": "Rollup fixture card one",
+        "board": "alpha",
+        "status": "done",
+        "sessions": 2,
+        "tool_calls": 9,
+        "failures": 3,
+        "retries": 2,
+        "unresolved": 1,
+        "recovered": 2,
+        "cost_usd": 0.6
+      },
+      {
+        "card": "t_b0000001",
+        "title": "Rollup fixture card beta",
+        "board": "beta",
+        "status": "done",
+        "sessions": 1,
+        "tool_calls": 4,
+        "failures": 2,
+        "retries": 1,
+        "unresolved": 1,
+        "recovered": 1,
+        "cost_usd": 0.25
+      },
+      {
+        "card": null,
+        "title": "unattributed sessions",
+        "board": "unattributed",
+        "status": "",
+        "sessions": 1,
+        "tool_calls": 2,
+        "failures": 1,
+        "retries": 0,
+        "unresolved": 1,
+        "recovered": 0,
+        "cost_usd": 0.05
+      },
+      {
+        "card": "t_a0000002",
+        "title": "Rollup fixture card two",
+        "board": "alpha",
+        "status": "done",
+        "sessions": 1,
+        "tool_calls": 1,
+        "failures": 0,
+        "retries": 0,
+        "unresolved": 0,
+        "recovered": 0,
+        "cost_usd": 0.0
+      }
+    ],
+    "slow_tools": [
+      {
+        "tool": "terminal",
+        "calls": 5,
+        "failures": 3,
+        "timed_calls": 5,
+        "p50_s": 5.0,
+        "p95_s": 11.2,
+        "max_s": 12.5,
+        "total_s": 27.7
+      }
+    ],
+    "slow_tools_excluded": [
+      {
+        "tool": "clarify",
+        "calls": 1,
+        "failures": 0,
+        "timed_calls": 1,
+        "p50_s": 5000.0,
+        "p95_s": 5000.0,
+        "max_s": 5000.0,
+        "total_s": 5000.0,
+        "reason": "waits on a human, not work"
+      },
+      {
+        "tool": "web_search",
+        "calls": 2,
+        "failures": 0,
+        "timed_calls": 2,
+        "p50_s": 0.65,
+        "p95_s": 0.875,
+        "max_s": 0.9,
+        "total_s": 1.3,
+        "reason": "fewer than 5 timed calls"
+      },
+      {
+        "tool": "write_file",
+        "calls": 2,
+        "failures": 1,
+        "timed_calls": 2,
+        "p50_s": 0.4,
+        "p95_s": 0.49,
+        "max_s": 0.5,
+        "total_s": 0.8,
+        "reason": "fewer than 5 timed calls"
+      },
+      {
+        "tool": "patch",
+        "calls": 2,
+        "failures": 1,
+        "timed_calls": 2,
+        "p50_s": 0.35,
+        "p95_s": 0.395,
+        "max_s": 0.4,
+        "total_s": 0.7,
+        "reason": "fewer than 5 timed calls"
+      },
+      {
+        "tool": "read_file",
+        "calls": 4,
+        "failures": 1,
+        "timed_calls": 4,
+        "p50_s": 0.2,
+        "p95_s": 0.285,
+        "max_s": 0.3,
+        "total_s": 0.9,
+        "reason": "fewer than 5 timed calls"
+      }
+    ],
+    "retry_hotspots": [
+      {
+        "card": "t_a0000001",
+        "title": "Rollup fixture card one",
+        "board": "alpha",
+        "status": "done",
+        "sessions": 2,
+        "tool_calls": 9,
+        "failures": 3,
+        "retries": 2,
+        "unresolved": 1,
+        "recovered": 2,
+        "cost_usd": 0.6
+      },
+      {
+        "card": "t_b0000001",
+        "title": "Rollup fixture card beta",
+        "board": "beta",
+        "status": "done",
+        "sessions": 1,
+        "tool_calls": 4,
+        "failures": 2,
+        "retries": 1,
+        "unresolved": 1,
+        "recovered": 1,
+        "cost_usd": 0.25
+      }
+    ],
+    "checks": [
+      {
+        "name": "cost · per-model rows vs session rows",
+        "recorded": 0.92,
+        "derived": 0.9,
+        "delta": -0.02,
+        "unit": "USD",
+        "note": "the same arithmetic a receipt performs, across every session in the window"
+      },
+      {
+        "name": "cost · card attribution covers the window",
+        "recorded": 0.9,
+        "derived": 0.9,
+        "delta": 0.0,
+        "unit": "USD",
+        "note": "attributed by card + explicitly unattributed must equal the per-model total"
+      },
+      {
+        "name": "tool calls · message log vs session counters",
+        "recorded": 16,
+        "derived": 16,
+        "delta": 0,
+        "unit": "calls",
+        "note": "rows in the message log vs the counter Hermes wrote on the session"
+      }
+    ]
+  },
+  "previous": {
+    "window": {
+      "start": 1792710000.0,
+      "end": 1793314800.0,
+      "start_iso": "2026-10-22T23:00:00Z",
+      "end_iso": "2026-10-29T23:00:00Z",
+      "days": 7.0
+    },
+    "sessions": 2,
+    "tool_calls": 3,
+    "failures": 1,
+    "unverified": 0,
+    "unterminated": 0,
+    "retries": 1,
+    "retry_chains": 1,
+    "chains_recovered": 1,
+    "unresolved": 0,
+    "unattributed_retries": 0,
+    "unattributed_failures": 0,
+    "distinct_tools": 2,
+    "distinct_cards": 1,
+    "duration": {
+      "total_s": 5.5,
+      "p50_s": 2.0,
+      "p95_s": 2.9,
+      "max_s": 3.0
+    },
+    "cost": {
+      "usage_usd": 0.32,
+      "recorded_usd": 0.32,
+      "delta_usd": 0.0,
+      "sessions_with_usage": 2,
+      "sessions_without_usage": 0,
+      "sessions_without_usage_ids": [],
+      "attributed_usd": 0.3,
+      "unattributed_usd": 0.02,
+      "receipt_mismatches": [],
+      "receipt_mismatch_count": 0,
+      "statuses": [
+        "estimated"
+      ]
+    },
+    "taxonomy": [
+      {
+        "class": "exit_nonzero",
+        "refined_from": "nonzero_exit",
+        "count": 1,
+        "share_pct": 100.0,
+        "first_seen": "2026-10-23T23:00:01Z",
+        "last_seen": "2026-10-23T23:00:01Z",
+        "tools": [
+          {
+            "tool": "terminal",
+            "count": 1
+          }
+        ],
+        "retried": 1,
+        "recovered": 1,
+        "unresolved": 0,
+        "example": {
+          "tool": "terminal",
+          "session": "local-fff000",
+          "at": "2026-10-23T23:00:01Z",
+          "text": "1 failed"
+        }
+      }
+    ],
+    "by_model": [
+      {
+        "model": "m-one",
+        "providers": [
+          "prov-a"
+        ],
+        "api_calls": 6,
+        "input": 9000,
+        "output": 1000,
+        "cache_read": 0,
+        "cache_write": 0,
+        "reasoning": 0,
+        "cost_usd": 0.3,
+        "cost_status": "estimated"
+      },
+      {
+        "model": "m-two",
+        "providers": [
+          "prov-b"
+        ],
+        "api_calls": 1,
+        "input": 1000,
+        "output": 200,
+        "cache_read": 0,
+        "cache_write": 0,
+        "reasoning": 0,
+        "cost_usd": 0.02,
+        "cost_status": "estimated"
+      }
+    ],
+    "by_card": [
+      {
+        "card": "t_a0000003",
+        "title": "Previous window card",
+        "board": "alpha",
+        "status": "done",
+        "sessions": 1,
+        "tool_calls": 2,
+        "failures": 1,
+        "retries": 1,
+        "unresolved": 0,
+        "recovered": 1,
+        "cost_usd": 0.3
+      },
+      {
+        "card": null,
+        "title": "unattributed sessions",
+        "board": "unattributed",
+        "status": "",
+        "sessions": 1,
+        "tool_calls": 1,
+        "failures": 0,
+        "retries": 0,
+        "unresolved": 0,
+        "recovered": 0,
+        "cost_usd": 0.02
+      }
+    ],
+    "slow_tools": [],
+    "slow_tools_excluded": [
+      {
+        "tool": "terminal",
+        "calls": 2,
+        "failures": 1,
+        "timed_calls": 2,
+        "p50_s": 2.5,
+        "p95_s": 2.95,
+        "max_s": 3.0,
+        "total_s": 5.0,
+        "reason": "fewer than 5 timed calls"
+      },
+      {
+        "tool": "read_file",
+        "calls": 1,
+        "failures": 0,
+        "timed_calls": 1,
+        "p50_s": 0.5,
+        "p95_s": 0.5,
+        "max_s": 0.5,
+        "total_s": 0.5,
+        "reason": "fewer than 5 timed calls"
+      }
+    ],
+    "retry_hotspots": [
+      {
+        "card": "t_a0000003",
+        "title": "Previous window card",
+        "board": "alpha",
+        "status": "done",
+        "sessions": 1,
+        "tool_calls": 2,
+        "failures": 1,
+        "retries": 1,
+        "unresolved": 0,
+        "recovered": 1,
+        "cost_usd": 0.3
+      }
+    ],
+    "checks": [
+      {
+        "name": "cost · per-model rows vs session rows",
+        "recorded": 0.32,
+        "derived": 0.32,
+        "delta": 0.0,
+        "unit": "USD",
+        "note": "the same arithmetic a receipt performs, across every session in the window"
+      },
+      {
+        "name": "cost · card attribution covers the window",
+        "recorded": 0.32,
+        "derived": 0.32,
+        "delta": 0.0,
+        "unit": "USD",
+        "note": "attributed by card + explicitly unattributed must equal the per-model total"
+      },
+      {
+        "name": "tool calls · message log vs session counters",
+        "recorded": 3,
+        "derived": 3,
+        "delta": 0,
+        "unit": "calls",
+        "note": "rows in the message log vs the counter Hermes wrote on the session"
+      }
+    ]
+  },
+  "deltas": [
+    {
+      "metric": "sessions",
+      "current": 5,
+      "previous": 2,
+      "delta": 3,
+      "delta_pct": 150.0,
+      "better_when": "neutral",
+      "unit": "sessions with messages",
+      "kind": "count"
+    },
+    {
+      "metric": "tool calls",
+      "current": 16,
+      "previous": 3,
+      "delta": 13,
+      "delta_pct": 433.33,
+      "better_when": "neutral",
+      "unit": "dispatched tool calls",
+      "kind": "count"
+    },
+    {
+      "metric": "failures",
+      "current": 6,
+      "previous": 1,
+      "delta": 5,
+      "delta_pct": 500.0,
+      "better_when": "lower",
+      "unit": "calls that returned an error",
+      "kind": "count"
+    },
+    {
+      "metric": "failure rate",
+      "current": 37.5,
+      "previous": 33.33,
+      "delta": 4.17,
+      "delta_pct": 12.51,
+      "better_when": "lower",
+      "unit": "failures / tool calls, %",
+      "kind": "percent"
+    },
+    {
+      "metric": "retries",
+      "current": 3,
+      "previous": 1,
+      "delta": 2,
+      "delta_pct": 200.0,
+      "better_when": "lower",
+      "unit": "calls that repeated a failed intent",
+      "kind": "count"
+    },
+    {
+      "metric": "unresolved failures",
+      "current": 3,
+      "previous": 0,
+      "delta": 3,
+      "delta_pct": null,
+      "better_when": "lower",
+      "unit": "failures never retried",
+      "kind": "count"
+    },
+    {
+      "metric": "chains recovered",
+      "current": 3,
+      "previous": 1,
+      "delta": 2,
+      "delta_pct": 200.0,
+      "better_when": "higher",
+      "unit": "failed chains that ended in a success",
+      "kind": "count"
+    },
+    {
+      "metric": "cost",
+      "current": 0.9,
+      "previous": 0.32,
+      "delta": 0.58,
+      "delta_pct": 181.25,
+      "better_when": "lower",
+      "unit": "USD from per-model rows",
+      "kind": "money"
+    },
+    {
+      "metric": "tokens in",
+      "current": 60000,
+      "previous": 10000,
+      "delta": 50000,
+      "delta_pct": 500.0,
+      "better_when": "neutral",
+      "unit": "input tokens",
+      "kind": "count"
+    },
+    {
+      "metric": "tokens out",
+      "current": 11500,
+      "previous": 1200,
+      "delta": 10300,
+      "delta_pct": 858.33,
+      "better_when": "neutral",
+      "unit": "output tokens",
+      "kind": "count"
+    },
+    {
+      "metric": "median tool duration",
+      "current": 0.4,
+      "previous": 2.0,
+      "delta": -1.6,
+      "delta_pct": -80.0,
+      "better_when": "lower",
+      "unit": "p50 seconds",
+      "kind": "duration"
+    },
+    {
+      "metric": "p95 tool duration",
+      "current": 7.95,
+      "previous": 2.9,
+      "delta": 5.05,
+      "delta_pct": 174.14,
+      "better_when": "lower",
+      "unit": "p95 seconds",
+      "kind": "duration"
+    }
+  ],
+  "headline": "5 sessions · 16 tool calls · 6 failures (37.5%) · $0.9000",
+  "desk_line": "2026-W45 · top failure auth ×1 · retries 3 (100% of chains recovered) · slowest terminal p95 11.2s · cost $0.9000 · cost +181% vs prior window",
+  "stability": {
+    "digest": "sha256:c394815d480f3a511178edc59ed7830e1543b37447546748beca9ee2d6453e8a",
+    "canonical": "sha256(json/sort_keys/utf-8)",
+    "timestamps": "UTC, second precision; no render clock in the payload",
+    "percentile_method": "linear interpolation at (n-1)*p over observed durations"
+  }
+}

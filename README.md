@@ -2,10 +2,15 @@
 
 **A session flight recorder for Hermes.** One command turns any Hermes session — or a date range, or a kanban card's evidence chain — into a single self-contained HTML document: what the agent was asked, every tool call as a timed node, failures and retries exactly as recorded, per-model token spend, and the cost Hermes recorded.
 
+A second command rolls a whole week of sessions up into a **process digest**: which
+failures recur, what they cost by model and by card, which tools are slow, which
+cards burn the most retries, and what moved since last week.
+
 Nobody ships session *documents*. Logs are for the person who ran them; a receipt is something you can hand to someone else.
 
 ```
 hermes receipts latest
+hermes receipts rollup --since 7d
 ```
 
 → `receipts-a1b2c3d4e5f6.html` — opens offline, no server, no network, no dependencies.
@@ -49,9 +54,14 @@ hermes receipts 2026-11-01..2026-11-03
 hermes receipts t_ab12cd34           # a kanban card's evidence chain
 hermes receipts a1b2c3d4             # session id prefix
 hermes receipts --list               # recent sessions
+
+hermes receipts rollup --since 7d              # weekly process digest (HTML + JSON)
+hermes receipts rollup --since 7d --board agency
+hermes receipts rollup --since 7d --as-of 2026-11-06   # pin the window (byte-stable)
 ```
 
 Options: `-o/--out <path>`, `--db <path>`, `--json`, `--open`, `-q/--quiet`.
+Rollup adds `--since` (7d, 36h, 2w, or a date), `--board <slug>`, `--as-of`, `--kanban-home`.
 
 ### As an agent tool
 
@@ -72,6 +82,10 @@ Read-only, from `state.db` (`$HERMES_HOME/state.db`, profile-aware):
 | `sessions` | title, source, model, cwd, counters, recorded cost |
 | `messages` | the ask, every tool dispatch and result, timestamps |
 | `session_model_usage` | per-model tokens and recorded cost |
+
+Rollup mode also reads the kanban boards under `<hermes home>/kanban/boards/<slug>/kanban.db`
+(card id, title, status, assignee) to attribute sessions to cards. Board databases are
+opened read-only too; no board is ever written.
 
 The database is opened with `mode=ro` and `PRAGMA query_only`. If the store refuses a read-only attachment (a WAL file held on a locked filesystem), Receipts snapshots the file and its `-wal`/`-shm` siblings to scratch and reads the copy — it never opens the live store for writing.
 
@@ -112,47 +126,77 @@ Single HTML file, ~20–220 KB depending on session length:
 
 Inline CSS and ~40 lines of vanilla JS for the filters. With scripting off, the document is still complete.
 
+## Rollup mode
+
+```
+hermes receipts rollup --since 7d [--board <slug>] [-o base/path] [--as-of <moment>]
+```
+
+Writes **two files** — `rollup-<start>_<end>.html` and `.json` — that answer, for the window:
+
+1. **Failure taxonomy** — every failed call classified by ordered pattern rules (no model, no embedding), ranked by frequency, with first seen, last seen, the tools it hits, and how many were retried / recovered / left unresolved.
+2. **Cost by model and by card** — summed from `session_model_usage`, attributed to the card each session worked on, and reconciled against the session rows and against per-session receipts. Sessions with no usage rows are counted and named; their cost is *unknown*, never zero.
+3. **Slowest tools** — p50 / p95 / max / total per tool, with the percentile method stated on the page. Tools that wait on a human (`clarify`) and tools with fewer than five timed calls are excluded from the ranking, and the exclusions are listed.
+4. **Retry hotspots** — cards ranked by retries, with failures, recovered chains, unresolved failures and cost.
+5. **Week over week** — the same metrics against the immediately preceding window of equal length, with deltas and percentages.
+
+**Determinism.** The window is explicit (`--as-of` pins the end), all timestamps are UTC, every ordering has a tiebreaker, money is rounded once, and nothing derives from render time. Two runs over the same closed window produce byte-identical JSON and HTML. The payload carries a SHA-256 digest of its own measurements (excluding file metadata), and `samples/rollup-demo.json` is verified to rebuild from the committed fixture in the test suite.
+
+Card attribution is evidence-based, in this order: the worker transcript's own `# Kanban task t_xxxxxxxx` header, then inheritance from `parent_session_id` (sub-agent work belongs to the parent's card), then an exact unique title match. Anything else is reported as unattributed rather than guessed.
+
+See [`docs/ROLLUP.md`](docs/ROLLUP.md) for the design contract and the gazette integration.
+
 ## Tests
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-30 tests, standard library only. The fixture is generated, not committed as a binary:
+75 tests, standard library only. Two fixtures are generated, not committed as binaries:
 
 ```bash
-python fixtures/make_demo_db.py fixtures/demo-state.db
+python fixtures/make_demo_db.py fixtures/demo-state.db          # one session, the demo
+python fixtures/make_rollup_db.py fixtures/.rollup-fixture      # two weeks + two boards
 ```
 
-It contains a fictional checkout bug with two recovered retry chains and one failure that never resolved — sanitized by construction, which is what the demo artifact is built from.
+The first contains a fictional checkout bug with two recovered retry chains and one failure that never resolved — sanitized by construction, which is what the demo artifact is built from. The second is a two-week, two-board store whose every count, duration and dollar is asserted exactly by `tests/test_rollup.py`.
 
 ## Requirements
 
 - Python 3.9+ (stdlib only)
 - A Hermes session store with at least one session
-- Nothing else
+- Nothing else (rollup mode additionally reads kanban boards when they exist)
 
 ## Limitations, stated plainly
 
 - **Durations are wall-clock between the dispatch message and its result.** For parallel calls dispatched in one assistant message, all of them share a start time, so their durations include waiting. The artifact labels parallel groups.
 - **Cost is only as good as the recorded figures.** If a store has no `session_model_usage` rows, the spend section says so rather than estimating.
 - **Compaction can orphan results.** A tool result whose dispatch row was compacted away is rendered as an `orphan result` node instead of being dropped.
-- **No cross-session aggregation beyond a date range.** A date-range receipt lists sessions and their timelines; it is not a roll-up dashboard.
+- **A rollup assigns each session to the window it *started* in.** A session that spans a window boundary is counted once, in the earlier window, so consecutive windows never double-count it — but the tail of that work appears in the previous week.
+- **Card attribution is evidence, not inference.** If a worker transcript carries no card header, no parent chain and no unique title match, its cost lands in `unattributed` rather than being assigned to a plausible card.
+- **Failure classes are finite.** The taxonomy is a fixed, ordered rule table; a genuinely new failure mode files under `tool_error` until a rule is added. That is deliberate — a class that changes meaning between weeks is not a measurement.
+- **A p95 needs a sample.** Tools with fewer than five timed calls (and `clarify`, which waits on a human) are excluded from the slow-tool ranking and listed as excluded.
+- **Byte-stability is for a closed window.** A running session is still being written; pin `--as-of` (or run after the week closes) for two runs to agree.
 
 ## Layout
 
 ```
-plugin.yaml              plugin manifest (provides_tools: receipts_build)
-__init__.py              loader entry point → receipts.plugin.register
+plugin.yaml                 plugin manifest (provides_tools: receipts_build)
+__init__.py                 loader entry point → receipts.plugin.register
 receipts/
-  dbio.py                read-only store access, resolution, provenance
-  manifest.py            normalisation, failure classification, retry chains, reconciliation
-  render.py              the single-file HTML document
-  cli.py                 `hermes receipts` / `python -m receipts`
-  plugin.py              tool + CLI registration
-fixtures/make_demo_db.py synthetic session generator
-tests/test_receipts.py   30 acceptance tests
-samples/                 generated artifact
+  dbio.py                   read-only store access, resolution, provenance
+  manifest.py               normalisation, failure classification, retry chains, reconciliation
+  render.py                 the single-file HTML document (+ the shared document shell)
+  rollup.py                 window analysis, taxonomy, cost attribution, deltas, digest
+  render_rollup.py          the digest document
+  cli.py                    `hermes receipts [rollup]` / `python -m receipts`
+  plugin.py                 tool + CLI registration
+fixtures/make_demo_db.py    synthetic single-session store
+fixtures/make_rollup_db.py  synthetic two-week, two-board store
+tests/test_receipts.py      v1 acceptance tests
+tests/test_rollup.py        v1.1 acceptance tests (75 total)
+samples/                    committed artifacts: the receipt and the rollup digest
+docs/ROLLUP.md              rollup design contract + gazette integration
 ```
 
 ## License

@@ -754,7 +754,8 @@ def _analyse_window(conn, start: float, end: float, cards: dict, board: str | No
     unattributed = next((c for c in card_rows if c["card"] is None), None)
     attributed_total = sum((c["cost_usd"] or 0.0) for c in card_rows if c["card"] is not None)
 
-    durations = [n["duration_s"] for n in nodes if n["duration_s"] is not None]
+    durations = [n["duration_s"] for n in nodes
+                 if n["duration_s"] is not None and n["tool"] not in WAIT_TOOLS]
 
     return {
         "window": {"start": start, "end": end,
@@ -912,8 +913,14 @@ def _desk_line(payload: dict) -> str:
     return " · ".join(parts)
 
 
-def _week_label(end_ts: float) -> str:
-    dt = datetime.fromtimestamp(float(end_ts), tz=timezone.utc)
+def _week_label(ts: float) -> str:
+    """ISO week of the *middle* of the window, not its end.
+
+    A Monday-06:30 run covers the week that just finished; labelling it by the
+    end instant would name the new week and make two editions look like one.
+    The bounds in `window.start/end` remain authoritative.
+    """
+    dt = datetime.fromtimestamp(float(ts), tz=timezone.utc)
     iso = dt.isocalendar()
     return f"{iso[0]}-W{iso[1]:02d}"
 
@@ -954,6 +961,8 @@ def build_rollup(since: str = "7d", board: str | None = None, as_of: str | None 
     window = parse_window(since, as_of)
     boards = load_boards(kanban_home_path)
     cards = _card_index(boards)
+    midpoint = window["start"] + window["seconds"] / 2.0
+    previous_midpoint = window["previous"]["start"] + window["seconds"] / 2.0
 
     if board:
         slug = board.strip()
@@ -979,11 +988,11 @@ def build_rollup(since: str = "7d", board: str | None = None, as_of: str | None 
             "end_ts": window["end"],
             "days": window["days"],
             "label": window["label"],
-            "week": _week_label(window["end"]),
+            "week": _week_label(midpoint),
             "previous_start": window["previous"]["start_iso"],
             "previous_end": window["previous"]["end_iso"],
             "previous_label": window["previous"]["label"],
-            "previous_week": _week_label(window["previous"]["end"]),
+            "previous_week": _week_label(previous_midpoint),
         },
         "source": dict(db_identity(db_path), kanban_home=str(kanban_home_path or kanban_home())),
         "boards": [{"slug": b["slug"], "name": b["name"], "cards": len(b["tasks"]),

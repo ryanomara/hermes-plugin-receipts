@@ -1,0 +1,17 @@
+    Workdir:   C:\Users\ryoma\Projects\ai-marketing-agency
+    Last run:  2026-11-05T02:33:51.319968+01:00  ok
+    Dispatch:  on time (scheduled 2026-11-05T02:30:00+01:00)
+    Execution: completed  ebea6e8d74ed4cc683cc800b1dd1fa32
+
+  b2f1a5960d36 [active]
+    Name:      Receipts weekly rollup (Mon 06:30)
+    Schedule:  30 6 * * 1
+    Repeat:    ∞
+    Next run:  2026-11-09T06:30:00+01:00
+    Deliver:   local
+    Script:    receipts_rollup_weekly.py
+    Mode:      no-agent (script stdout delivered directly)
+    Workdir:   C:\Users\ryoma\Projects\lifehack
+    Last run:  2026-11-06T01:04:05.337677+01:00  ok
+    Execution: completed  117a1d79e4744e728e3e6bf30d0d7cb5
+

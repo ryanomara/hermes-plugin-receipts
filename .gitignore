@@ -29,3 +29,7 @@ demo/_mix_v2.wav
 data/scratch/
 demo/concat_v2.txt
 demo/value_card_check.png
+
+# rollup fixture + scratch
+data/scratch/
+fixtures/.rollup-fixture/

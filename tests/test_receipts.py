@@ -213,7 +213,10 @@ class TestResilience(unittest.TestCase):
 
 class TestPlugin(unittest.TestCase):
     def test_plugin_yaml_is_valid(self):
-        import yaml  # available in the Hermes venv; skipped if a bare interpreter runs the suite
+        try:
+            import yaml  # available in the Hermes venv; skipped if a bare interpreter runs the suite
+        except ModuleNotFoundError:
+            self.skipTest("PyYAML not installed in this interpreter")
 
         manifest = yaml.safe_load((ROOT / "plugin.yaml").read_text(encoding="utf-8"))
         for field in ("name", "version", "description"):

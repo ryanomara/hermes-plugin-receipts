@@ -15,7 +15,6 @@ __all__ = ["render_rollup", "EXTRA_CSS"]
 EXTRA_CSS = r"""
 /* rollup-only */
 .tbl{overflow-x:auto;overflow-y:hidden}
-.band .who{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
 .mast-meta .digest{color:var(--faint);font-size:10px;letter-spacing:.04em}
 .tbl td .sub{display:block;color:var(--faint);font-size:10.5px;margin-top:2px;line-height:1.45;
   white-space:normal;max-width:520px}
@@ -25,10 +24,12 @@ EXTRA_CSS = r"""
 .down{color:var(--green)}
 .flat{color:var(--faint)}
 .wow td.delta{white-space:nowrap}
-.kicker{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
-.twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:820px){.twocol{grid-template-columns:1fr}}
 """
+
+
+def _clip_text(text, limit: int) -> str:
+    text = text or ""
+    return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
 def _days(value) -> str:
@@ -236,7 +237,7 @@ def _by_card(payload: dict, limit: int = 15) -> str:
     for c in shown:
         body.append(
             f'<tr><td>{esc(c["card"])}</td><td>{esc(c["board"])}</td><td>{esc(c["status"] or "—")}</td>'
-            f'<td>{esc((c["title"] or "")[:64])}</td>'
+            f'<td>{esc(_clip_text(c["title"], 64))}</td>'
             f'<td class="n">{num(c["sessions"])}</td><td class="n">{num(c["tool_calls"])}</td>'
             f'<td class="n">{num(c["failures"])}</td><td class="n">{num(c["retries"])}</td>'
             f'<td class="n">{_m(c["cost_usd"])}</td></tr>'
@@ -326,7 +327,7 @@ def _slow_tools(payload: dict) -> str:
 <th class="n">p50</th><th class="n">p95</th><th class="n">max</th><th class="n">total</th></tr></thead>
 <tbody>{body}</tbody></table></div>
 <div class="legend"><span class="faint">Durations are wall-clock dispatch → result; parallel calls share a start
-time. Percentiles use linear interpolation at (n−1)p over observed durations.</span></div>{ex}</section>"""
+time; human-wait tools (clarify) are excluded. Percentiles use linear interpolation at (n−1)p over observed durations.</span></div>{ex}</section>"""
 
 
 def _hotspots(payload: dict) -> str:
@@ -338,7 +339,7 @@ def _hotspots(payload: dict) -> str:
 ({num(unattr)} retry(ies) ran outside any card).</pre></div></section>"""
     body = "".join(
         f'<tr><td>{esc(r["card"])}</td><td>{esc(r["board"])}</td>'
-        f'<td>{esc((r["title"] or "")[:64])}</td>'
+        f'<td>{esc(_clip_text(r["title"], 64))}</td>'
         f'<td class="n">{num(r["retries"])}</td><td class="n">{num(r["failures"])}</td>'
         f'<td class="n">{num(r["recovered"])}</td><td class="n">{num(r["unresolved"])}</td>'
         f'<td class="n">{_m(r["cost_usd"])}</td></tr>'
@@ -377,7 +378,7 @@ def _wow(payload: dict) -> str:
             f'<tr class="wow"><td>{esc(d["metric"])}</td>'
             f'<td class="n">{esc(cur)}</td><td class="n">{esc(prev)}</td>'
             f'<td class="n delta {cls}">{esc(_arrow(d["delta"]))} {esc(delta)} · {esc(pct)}</td>'
-            f'<td class="faint">{esc(unit)}</td></tr>'
+            f'<td class="faint">{esc(d["unit"])}</td></tr>'
         )
     return f"""
 <section><h3>week over week · {esc(payload['window']['week'])} vs {esc(payload['window']['previous_week'])}</h3>
@@ -390,7 +391,10 @@ def _wow(payload: dict) -> str:
 def _provenance(payload: dict) -> str:
     src = payload["source"]
     size = src.get("size_bytes")
-    size_txt = f"{size / 1_048_576:.1f} MB" if isinstance(size, int) else "—"
+    if isinstance(size, int):
+        size_txt = f"{size / 1_048_576:.1f} MB" if size >= 1_048_576 else f"{size / 1024:.0f} KB"
+    else:
+        size_txt = "—"
     boards = payload.get("boards") or []
     bad = [b for b in boards if b.get("error")]
     board_txt = f'{num(len(boards))} indexed' + (f', {len(bad)} unreadable' if bad else "")
