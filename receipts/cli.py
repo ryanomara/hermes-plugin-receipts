@@ -214,7 +214,8 @@ def run(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="hermes receipts",
-        description="Render a Hermes session (or date range, or kanban card) as one self-contained HTML receipt.",
+        description="Render a Hermes session (or date range, or kanban card) as one self-contained HTML receipt, "
+                    "or roll a week of sessions up into a deterministic process digest (`receipts rollup --since 7d`).",
     )
     add_arguments(parser)
     args = parser.parse_args(argv)

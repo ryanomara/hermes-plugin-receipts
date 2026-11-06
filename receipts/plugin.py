@@ -127,12 +127,13 @@ def register(ctx) -> None:  # noqa: D401 - Hermes plugin entry point
     )
     ctx.register_cli_command(
         name="receipts",
-        help="Render a session as a self-contained HTML receipt",
+        help="Render a session as a self-contained HTML receipt, or a week as a process digest",
         setup_fn=_setup_cli,
         handler_fn=_cli_handler,
         description=(
             "Turn a Hermes session, a date range, or a kanban card's evidence chain into one "
-            "offline HTML document: timeline, failures, retries, token spend, recorded cost."
+            "offline HTML document: timeline, failures, retries, token spend, recorded cost. "
+            "`receipts rollup --since 7d` renders the weekly digest instead."
         ),
     )
     logger.debug("receipts %s registered (%s + `hermes receipts`)", __version__, TOOL_NAME)
