@@ -67,6 +67,13 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("--open", action="store_true", help="open the artifact in the default browser")
     parser.add_argument("-q", "--quiet", action="store_true", help="only print the artifact path")
     parser.add_argument("--limit", type=int, default=15, help="rows for --list (default 15)")
+    parser.add_argument("--theme", choices=("instrument", "client"), default="instrument",
+                        help="instrument (console, default) or client (paper document for sharing)")
+    parser.add_argument("--redact", action="store_true",
+                        help="write a share-safe copy: secrets, emails, user paths, IPs and phones "
+                             "removed, with a redaction manifest beside the file")
+    parser.add_argument("--redact-words", dest="redact_words",
+                        help="file of extra words to remove (one per line, e.g. client names)")
     # rollup-only
     parser.add_argument("--since", help="rollup window: 7d, 36h, 2w, or a date (2026-10-30)")
     parser.add_argument("--board", help="rollup: restrict to one kanban board slug (e.g. agency)")
@@ -177,16 +184,31 @@ def run(args: argparse.Namespace) -> int:
 
     manifest = build_manifest(getattr(args, "target", None), db_path=db)
 
+    # Redaction runs on the manifest, before rendering: the document, the JSON
+    # and the sidecar all describe the same (already redacted) data.
+    redaction_report = None
+    if getattr(args, "redact", False):
+        from .privacy import redact_manifest
+        from .privacy import _load_words
+        words = _load_words(getattr(args, "redact_words", None))
+        manifest, redaction_report = redact_manifest(manifest, words)
+        import time as _time
+        redaction_report["generated_at"] = _time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        manifest["redaction"] = redaction_report
+
     if getattr(args, "json", False):
         from .render import render_json
 
         print(render_json(manifest))
         return 0
 
-    html = render_html(manifest)
+    html = render_html(manifest, theme=getattr(args, "theme", "instrument") or "instrument")
     out = Path(args.out).expanduser() if getattr(args, "out", None) else default_out_path(manifest)
     out = out if out.is_absolute() else (Path.cwd() / out)
     _atomic_write(out, html)
+    if redaction_report:
+        import json as _json
+        _atomic_write(out.with_suffix(".redaction.json"), _json.dumps(redaction_report, indent=2))
 
     if getattr(args, "quiet", False):
         print(out)

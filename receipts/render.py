@@ -11,6 +11,7 @@ import html
 import json
 
 from . import __version__
+from .theme_client import CLIENT_CSS
 
 __all__ = ["render_html"]
 
@@ -785,9 +786,14 @@ def _provenance(m: dict) -> str:
 # --------------------------------------------------------------------------- #
 
 
-def render_html(manifest: dict) -> str:
-    """Return the complete standalone document."""
+def render_html(manifest: dict, theme: str = "instrument") -> str:
+    """Return the complete standalone document.
+
+    theme="instrument" (default) is the console surface; theme="client" is the
+    quieter paper document for sending to someone else.
+    """
     body = "".join([
+        _redaction_band(manifest),
         _masthead(manifest),
         _hero(manifest),
         f'<section><h3>the ask</h3>{_ask_block(manifest["asks"][0]) if manifest.get("asks") else "<div class=\'ask\'><pre>No user message recorded.</pre></div>"}</section>',
@@ -799,14 +805,29 @@ def render_html(manifest: dict) -> str:
     ])
 
     title = manifest.get("title") or "Receipts"
+    extra = CLIENT_CSS if theme == "client" else ""
+    body_cls = ' class="theme-client"' if theme == "client" else ""
     return (
         "<!doctype html>\n"
         '<html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         f"<title>Receipts · {esc(title)}</title>"
-        f"<style>{_CSS}</style></head><body><div class=\"wrap\">{body}</div>"
+        f"<style>{_CSS}{extra}</style></head><body{body_cls}><div class=\"wrap\">{body}</div>"
         f"<script>{_JS}</script></body></html>\n"
     )
+
+
+def _redaction_band(manifest: dict) -> str:
+    """A visible notice when the document is a redacted copy — the honesty rule
+    says removals are declared, never silent."""
+    report = manifest.get("redaction") or {}
+    total = report.get("total") or 0
+    if not total:
+        return ""
+    classes = ", ".join(f"{k} ×{v}" for k, v in (report.get("classes") or {}).items())
+    return ('<div class="redact-band"><b>Redacted copy.</b> '
+            f'{total} item(s) removed before sharing: {esc(classes)}. '
+            'The original receipt is unchanged.</div>')
 
 
 def render_document(title: str, body: str, extra_css: str = "") -> str:
