@@ -75,6 +75,7 @@ __all__ = [
     "CLASSES",
     "RULES",
     "PLACEHOLDER_TOKEN_RE",
+    "REPORT_VERSION",
     "Redactor",
     "canonical_json",
     "count_placeholders",
@@ -370,11 +371,11 @@ _RULE_NAMES = tuple(dict.fromkeys([rule.name for rule in RULES if not rule.prote
 #: Rules re-scanned after the pass to prove nothing structured was left behind.
 #: Paths are excluded because their kept prefix is meant to survive, and words
 #: because a benign entry ("Users") can legitimately appear in a kept prefix.
-_RESIDUAL_RULES = tuple(
+_RESIDUAL_RULES = tuple(dict.fromkeys(
     rule.name for rule in RULES
     if not rule.protected
     and rule.name not in {"win_user_path", "posix_user_path", "msys_user_path", "unc_user_path"}
-)
+))
 
 
 def _word_pattern(words: Iterable[str]) -> re.Pattern | None:
