@@ -1,0 +1,45 @@
+{
+  "pdf": "receipt-120-client.pdf",
+  "pdf_bytes": 732358,
+  "pages": 20,
+  "page_size_pt": [
+    595.9,
+    841.9
+  ],
+  "nodes": 120,
+  "nodes_with_row_and_args_on_same_page": 120,
+  "missing_or_split": [],
+  "first_node_page": 1,
+  "last_node_page": 18,
+  "page_break_after_node_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "page_text_chars": {
+    "min": 494,
+    "max": 2828
+  },
+  "flow_pages": [
+    19
+  ],
+  "flow_groups_expected": 108,
+  "flow_groups_in_pdf": 108,
+  "flow_calls_expected": 120,
+  "flow_calls_in_pdf": 120,
+  "flow_legend_present": true
+}

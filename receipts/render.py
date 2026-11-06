@@ -11,7 +11,7 @@ import html
 import json
 
 from . import __version__
-from .theme_client import CLIENT_CSS
+from .theme_client import client_sheet
 
 __all__ = ["render_html"]
 
@@ -315,6 +315,17 @@ footer b{color:var(--dim);font-weight:500}
   .node .args,.node .err,.res,.node details,.bar{margin-left:12px;padding-left:0}
   h2.title{font-size:17px}
 }
+"""
+
+# The redacted-copy notice is shared markup, but instrument had no base rule for
+# it (the seed only styled it inside body.theme-client). Appended only when a
+# band is actually present, so a non-redacted instrument receipt stays
+# byte-identical to v1.1.0 — the instrument output is a frozen contract.
+_REDACT_BAND_CSS = r"""
+.redact-band{border:1px solid var(--line);border-left:2px solid var(--amber);
+  border-radius:3px;background:linear-gradient(90deg,rgba(255,176,32,.08),transparent 60%);
+  padding:10px 14px;margin:0 0 18px;font-size:11.5px;color:var(--ink)}
+.redact-band b{color:var(--amber);font-weight:600}
 """
 
 # --------------------------------------------------------------------------- #
@@ -790,10 +801,15 @@ def render_html(manifest: dict, theme: str = "instrument") -> str:
     """Return the complete standalone document.
 
     theme="instrument" (default) is the console surface; theme="client" is the
-    quieter paper document for sending to someone else.
+    quieter paper document for sending to someone else. Both themes render the
+    same body — the only differences are the <body> class and the stylesheet.
     """
+    if theme not in ("instrument", "client"):
+        raise ValueError(f"unknown theme {theme!r}; expected 'instrument' or 'client'")
+
+    band = _redaction_band(manifest)
     body = "".join([
-        _redaction_band(manifest),
+        band,
         _masthead(manifest),
         _hero(manifest),
         f'<section><h3>the ask</h3>{_ask_block(manifest["asks"][0]) if manifest.get("asks") else "<div class=\'ask\'><pre>No user message recorded.</pre></div>"}</section>',
@@ -805,14 +821,20 @@ def render_html(manifest: dict, theme: str = "instrument") -> str:
     ])
 
     title = manifest.get("title") or "Receipts"
-    extra = CLIENT_CSS if theme == "client" else ""
-    body_cls = ' class="theme-client"' if theme == "client" else ""
+    if theme == "client":
+        sheet = client_sheet(_CSS)
+        body_cls = ' class="theme-client"'
+    else:
+        # The band rule is only appended when the band exists: no redaction, no
+        # extra bytes, so the instrument document stays a byte-for-byte v1.1.0.
+        sheet = _CSS + (_REDACT_BAND_CSS if band else "")
+        body_cls = ""
     return (
         "<!doctype html>\n"
         '<html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         f"<title>Receipts · {esc(title)}</title>"
-        f"<style>{_CSS}{extra}</style></head><body{body_cls}><div class=\"wrap\">{body}</div>"
+        f"<style>{sheet}</style></head><body{body_cls}><div class=\"wrap\">{body}</div>"
         f"<script>{_JS}</script></body></html>\n"
     )
 
