@@ -229,6 +229,12 @@ class RedactionAcceptance(unittest.TestCase):
         self.assertEqual(out["a"], "[word-1] and [word-2] and [word-3]")
         self.assertEqual(report["classes"], {"word": 3})
 
+    def test_word_matches_after_an_escaped_newline(self):
+        # JSON-in-a-command text: the "n" of \n must not hide the client name
+        out, report = privacy.redact_manifest({"x": "names\\nAcme\\nend"}, ["Acme"])
+        self.assertEqual(out["x"], "names\\n[word-1]\\nend")
+        self.assertEqual(report["classes"], {"word": 1})
+
     def test_word_file_loading_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "words.txt"

@@ -321,7 +321,9 @@ class Rule:
 
     ``cls`` is the placeholder family; ``render`` receives the match and the
     already-numbered placeholder (or ``[user]``); ``validate`` can veto a
-    candidate match (octets, digit counts, placeholders, ``$REFERENCES``).
+    candidate match (octets, digit counts, placeholders, ``$REFERENCES``);
+    ``view`` can present a same-length, boundary-friendly view of the text to
+    the pattern (used by the word rule so ``\nAcme`` is still a word).
     """
 
     name: str
@@ -329,6 +331,7 @@ class Rule:
     pattern: re.Pattern
     render: Callable[[re.Match, str], str] = _whole
     validate: Callable[[re.Match], bool] | None = None
+    view: Callable[[str], str] | None = None
     protected: bool = False
 
 
@@ -382,6 +385,19 @@ def _word_pattern(words: Iterable[str]) -> re.Pattern | None:
     return re.compile(r"(?<!\w)(?:" + "|".join(parts) + r")(?!\w)", re.I)
 
 
+_ESCAPE_VIEW_RE = re.compile(r"\\[nrtbfv0]")
+
+
+def _escape_view(text: str) -> str:
+    """Blank escaped control characters so they act as word separators.
+
+    Same length as the input, so match spans still address the original text:
+    in ``"line\\nAcme"`` the ``n`` would otherwise look like a word character
+    and the left word boundary would reject the client name.
+    """
+    return _ESCAPE_VIEW_RE.sub(lambda match: " " * len(match.group(0)), text)
+
+
 def load_words(path: str | Path | None) -> list[str]:
     """Read a word list: one entry per line, ``#`` comments, blanks ignored.
 
@@ -429,7 +445,7 @@ class Redactor:
         self.rules: dict[str, int] = {}
         self.fields: dict[str, dict[str, int]] = {}
         word_pattern = _word_pattern(self.words)
-        self._rules = RULES + ((Rule("word", "word", word_pattern),) if word_pattern else ())
+        self._rules = RULES + ((Rule("word", "word", word_pattern, view=_escape_view),) if word_pattern else ())
 
     # -- single string ------------------------------------------------------
 
@@ -438,7 +454,8 @@ class Redactor:
         spans: list[_Span] = []
         starts: list[int] = []
         for rule in self._rules:
-            for match in rule.pattern.finditer(text):
+            haystack = rule.view(text) if rule.view is not None else text
+            for match in rule.pattern.finditer(haystack):
                 start, end = match.span()
                 if end <= start:
                     continue
