@@ -22,11 +22,17 @@ from .render import render_html
 __all__ = ["main", "add_arguments", "run", "default_out_path"]
 
 
-def default_out_path(manifest: dict) -> Path:
+def default_out_path(manifest: dict, redact: bool = False) -> Path:
+    """Default artifact name.
+
+    A redacted run is a *copy*: its default name carries ``.redacted`` so it can
+    never land on top of the unredacted receipt of the same session.
+    """
     short = manifest["sessions"][0]["short_id"] if manifest.get("sessions") else "session"
     if manifest.get("multi"):
         short = f"{len(manifest['sessions'])}-sessions"
-    return Path.cwd() / f"receipts-{short}.html"
+    suffix = ".redacted.html" if redact else ".html"
+    return Path.cwd() / f"receipts-{short}{suffix}"
 
 
 def default_rollup_path(payload: dict) -> Path:
@@ -59,7 +65,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
              "(2026-11-01..2026-11-03), a kanban card id (t_ab12cd34), or 'rollup' "
              "for the weekly process digest. Default: latest",
     )
-    parser.add_argument("-o", "--out", help="output .html path (default: ./receipts-<session>.html); "
+    parser.add_argument("-o", "--out", help="output .html path (default: ./receipts-<session>.html; "
+                                            "with --redact: ./receipts-<session>.redacted.html); "
                                             "for rollup, the base path without extension")
     parser.add_argument("--db", help="path to state.db (default: the active Hermes home)")
     parser.add_argument("--json", action="store_true", help="print the manifest/rollup JSON instead of writing HTML")
@@ -71,9 +78,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
                         help="instrument (console, default) or client (paper document for sharing)")
     parser.add_argument("--redact", action="store_true",
                         help="write a share-safe copy: secrets, emails, user paths, IPs and phones "
-                             "removed, with a redaction manifest beside the file")
-    parser.add_argument("--redact-words", dest="redact_words",
-                        help="file of extra words to remove (one per line, e.g. client names)")
+                             "removed, with a .redaction.json sidecar beside the copy. The default "
+                             "output name gains .redacted; the unredacted receipt is never modified")
+    parser.add_argument("--redact-words", dest="redact_words", metavar="PATH",
+                        help="with --redact: file of extra words to remove, one per line "
+                             "(blank lines and # comments ignored)")
     # rollup-only
     parser.add_argument("--since", help="rollup window: 7d, 36h, 2w, or a date (2026-10-30)")
     parser.add_argument("--board", help="rollup: restrict to one kanban board slug (e.g. agency)")
@@ -115,6 +124,12 @@ def _list_sessions(db: Path | None, limit: int) -> int:
 
 def run_rollup(args: argparse.Namespace, db: Path) -> int:
     """`receipts rollup --since 7d [--board <slug>]` — the weekly digest."""
+    if getattr(args, "redact", False) or getattr(args, "redact_words", None):
+        # Refuse loudly rather than silently emitting an unredacted digest.
+        raise ReceiptsError(
+            "--redact / --redact-words apply to session receipts; the rollup digest "
+            "does not support redaction yet"
+        )
     from .rollup import build_rollup, render_json as render_rollup_json
     from .render_rollup import render_rollup
 
@@ -185,15 +200,33 @@ def run(args: argparse.Namespace) -> int:
     manifest = build_manifest(getattr(args, "target", None), db_path=db)
 
     # Redaction runs on the manifest, before rendering: the document, the JSON
-    # and the sidecar all describe the same (already redacted) data.
+    # and the sidecar all describe the same (already redacted) data. The walk is
+    # a deep copy — the unredacted manifest is never mutated.
     redaction_report = None
+    redact_words = getattr(args, "redact_words", None)
+    if redact_words and not getattr(args, "redact", False):
+        raise ReceiptsError(
+            f"--redact-words {redact_words!s} needs --redact: add --redact to write a "
+            "share-safe copy"
+        )
     if getattr(args, "redact", False):
-        from .privacy import redact_manifest
-        from .privacy import _load_words
-        words = _load_words(getattr(args, "redact_words", None))
+        from .privacy import canonical_json, load_words, redact_manifest
+
+        try:
+            words = load_words(redact_words)
+        except OSError as exc:
+            raise ReceiptsError(
+                f"cannot read --redact-words file {redact_words!s}: {exc.strerror or exc}"
+            ) from exc
+        except UnicodeDecodeError as exc:
+            raise ReceiptsError(
+                f"--redact-words file {redact_words!s} is not UTF-8 text"
+            ) from exc
         manifest, redaction_report = redact_manifest(manifest, words)
-        import time as _time
-        redaction_report["generated_at"] = _time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        # Stamp the copy with the document's own generation time rather than a
+        # second clock reading: one receipt, one timestamp, and a rerun over the
+        # same manifest produces the same sidecar bytes.
+        redaction_report["generated_at"] = manifest.get("generated_at")
         manifest["redaction"] = redaction_report
 
     if getattr(args, "json", False):
@@ -203,12 +236,19 @@ def run(args: argparse.Namespace) -> int:
         return 0
 
     html = render_html(manifest, theme=getattr(args, "theme", "instrument") or "instrument")
-    out = Path(args.out).expanduser() if getattr(args, "out", None) else default_out_path(manifest)
-    out = out if out.is_absolute() else (Path.cwd() / out)
+    explicit_out = getattr(args, "out", None)
+    if explicit_out:
+        out = Path(explicit_out).expanduser()
+        out = out if out.is_absolute() else (Path.cwd() / out)
+    else:
+        # A redacted run defaults to a *new* file; the unredacted receipt of the
+        # same session is never overwritten.
+        out = default_out_path(manifest, redact=redaction_report is not None)
     _atomic_write(out, html)
-    if redaction_report:
-        import json as _json
-        _atomic_write(out.with_suffix(".redaction.json"), _json.dumps(redaction_report, indent=2))
+    sidecar = None
+    if redaction_report is not None:
+        sidecar = out.with_suffix(".redaction.json")
+        _atomic_write(sidecar, canonical_json(redaction_report) + "\n")
 
     if getattr(args, "quiet", False):
         print(out)
@@ -222,6 +262,10 @@ def run(args: argparse.Namespace) -> int:
         print(f"  tokens {agg['usage']['input']:,} in / {agg['usage']['output']:,} out · "
               f"cost ${cost:.6f} ({recon.get('cost_status') or 'unrecorded'})")
         print(f"  {len(html.encode('utf-8')) / 1024:.0f} KB · opens offline")
+        if redaction_report is not None:
+            removed = ", ".join(f"{k} ×{v}" for k, v in redaction_report["classes"].items())
+            print(f"  redacted {redaction_report['total']} item(s)"
+                  f"{' · ' + removed if removed else ''} · sidecar {sidecar}")
 
     if getattr(args, "open", False):
         try:
