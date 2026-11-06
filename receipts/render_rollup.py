@@ -114,10 +114,16 @@ def _hero(payload: dict) -> str:
         f'<div class="cell {cls}"><div class="k">{esc(k)}</div><div class="v">{v}</div></div>'
         for k, v, cls in cells
     )
+    open_note = ""
+    if cur.get("excluded_open_sessions"):
+        open_note = (f' · {num(cur["excluded_open_sessions"])} session(s) still open at the cutoff '
+                     f'excluded')
+    elif cur.get("included_open"):
+        open_note = " · includes sessions still open at the cutoff (not reproducible)"
     return f"""
 <h2 class="title">{esc(payload['window']['week'])} · {_days(payload['window']['days'])} rollup</h2>
-<div class="subtitle">{esc(payload['headline'])} · previous window {esc(payload['window']['previous_week'])}
-({esc(payload['window']['previous_label'])})</div>
+<div class="subtitle">{esc(payload['headline'])} · closed by {esc(payload['window']['end'])}{esc(open_note)} ·
+previous window {esc(payload['window']['previous_week'])} ({esc(payload['window']['previous_label'])})</div>
 <div class="strip">{strip}</div>
 {_what_changed(payload)}"""
 
@@ -390,11 +396,6 @@ def _wow(payload: dict) -> str:
 
 def _provenance(payload: dict) -> str:
     src = payload["source"]
-    size = src.get("size_bytes")
-    if isinstance(size, int):
-        size_txt = f"{size / 1_048_576:.1f} MB" if size >= 1_048_576 else f"{size / 1024:.0f} KB"
-    else:
-        size_txt = "—"
     boards = payload.get("boards") or []
     bad = [b for b in boards if b.get("error")]
     board_txt = f'{num(len(boards))} indexed' + (f', {len(bad)} unreadable' if bad else "")
@@ -404,7 +405,7 @@ def _provenance(payload: dict) -> str:
   <div class="grid">
     <div>
       <div class="kv"><span class="k">store</span><span class="v">{esc(src.get('path'))}</span></div>
-      <div class="kv"><span class="k">size</span><span class="v">{esc(size_txt)}</span></div>
+      <div class="kv"><span class="k">access</span><span class="v">{esc(src.get('mode') or 'read-only')}</span></div>
       <div class="kv"><span class="k">canon</span><span class="v">{esc(src.get('kanban_home') or '—')}</span></div>
     </div>
     <div>

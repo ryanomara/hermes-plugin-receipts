@@ -327,15 +327,17 @@ class TestStability(RollupFixture):
         self.assertEqual(self.payload["stability"]["digest"], canonical_digest(self.payload))
         self.assertTrue(self.payload["stability"]["digest"].startswith("sha256:"))
 
-    def test_digest_covers_measurements_not_file_metadata(self):
+    def test_store_metadata_is_not_in_the_output(self):
+        """Touching the store must not change one byte of the digest."""
         stat = self.db.stat()
         try:
             os.utime(self.db, (0, 0))
             moved = self.build()
         finally:
             os.utime(self.db, (stat.st_atime, stat.st_mtime))
-        self.assertNotEqual(moved["source"]["mtime"], self.payload["source"]["mtime"])
+        self.assertEqual(render_json(moved), render_json(self.payload))
         self.assertEqual(moved["stability"]["digest"], self.payload["stability"]["digest"])
+        self.assertNotIn('"mtime"', json.dumps(moved["source"]))
 
     def test_no_render_clock_in_the_payload(self):
         blob = render_json(self.payload)
@@ -460,6 +462,59 @@ class TestArtifact(RollupFixture):
         html = render_rollup(payload)
         self.assertNotIn("<script>alert", html)
         self.assertIn("&lt;script&gt;alert", html)
+
+
+class TestOpenSessions(unittest.TestCase):
+    """A session still being written at the cutoff must not leak into a re-run."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        base = Path(cls.tmp.name) / "fixture"
+        paths = make_rollup_db.build(base)
+        cls.kanban = paths["kanban_home"]
+        cls.db = base / "state.db"
+        conn = sqlite3.connect(cls.db)
+        conn.execute(
+            "INSERT INTO sessions (id, source, model, started_at, ended_at, message_count, "
+            "tool_call_count, estimated_cost_usd, cost_status, title, last_activity_at, hidden) "
+            "VALUES ('local-open000', 'kanban', 'm-one', ?, NULL, 2, 1, 0.010000, 'estimated', "
+            "'Still running', ?, 0)",
+            (AS_OF - 3 * 86400, AS_OF + 120),
+        )
+        conn.execute(
+            "INSERT INTO messages (session_id, role, content, timestamp) VALUES "
+            "('local-open000', 'user', '# Kanban task t_b0000001: late work', ?)",
+            (AS_OF - 3 * 86400 + 5,),
+        )
+        conn.commit()
+        conn.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def build(self, **kwargs):
+        return build_rollup("7d", as_of=str(AS_OF), db_path=self.db,
+                            kanban_home_path=self.kanban, **kwargs)
+
+    def test_open_session_is_excluded_by_default(self):
+        payload = self.build()
+        self.assertEqual(payload["current"]["sessions"], 5)
+        self.assertEqual(payload["current"]["excluded_open_sessions"], 1)
+        self.assertIn("still open at the cutoff", render_rollup(payload))
+
+    def test_include_open_is_explicit_and_flagged(self):
+        payload = self.build(include_open=True)
+        self.assertEqual(payload["current"]["sessions"], 6)
+        self.assertEqual(payload["current"]["excluded_open_sessions"], 0)
+        self.assertTrue(payload["current"]["included_open"])
+        self.assertIn("not reproducible", render_rollup(payload))
+
+    def test_closed_only_is_stable_across_runs(self):
+        first = render_json(self.build())
+        second = render_json(self.build())
+        self.assertEqual(first, second)
 
 
 class TestCommittedSample(unittest.TestCase):

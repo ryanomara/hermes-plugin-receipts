@@ -5,7 +5,7 @@ happened in **one session**; a rollup is what keeps happening **across sessions*
 and whether it is getting better or worse.
 
 ```
-hermes receipts rollup --since 7d [--board <slug>] [-o base/path] [--as-of <moment>]
+hermes receipts rollup --since 7d [--board <slug>] [-o base/path] [--as-of <moment>] [--include-open]
 ```
 
 Writes `base.html` and `base.json` (default `rollup-<start>_<end>.html/.json`).
@@ -30,6 +30,9 @@ measurement. The rollup enforces:
 - **Explicit window.** `--as-of` pins the end; `--since` fixes the length. The
   output contains only window-derived timestamps, all UTC (`...Z`).
 - **No render clock.** Nothing in the payload or the HTML is `now()`.
+- **No store metadata in the output.** Path and kanban home are recorded; size
+  and mtime are not, because a running agent writes to `state.db` between runs
+  and provenance that changes under the artifact would defeat the point.
 - **Total ordering.** Every list sorts on its metric with an explicit tiebreaker
   (name, id), never on insertion or filesystem order.
 - **One rounding point.** Money to 6 dp, durations and percentages to 3 dp, at
@@ -38,8 +41,13 @@ measurement. The rollup enforces:
   (`json/sort_keys/utf-8`) **excluding** `source` (store path, size, mtime) and
   `stability` itself. Copying the store or rebuilding an identical fixture does
   not change the digest; changing a count does.
-- **Sessions are assigned by start time.** A session belongs to the window it
-  started in, so adjacent windows never double-count it.
+- **Sessions are assigned by start time and must be closed.** A session belongs
+  to the window it started in *and* had closed by the window end
+  (`COALESCE(ended_at, last_activity_at, started_at) <= end`). Sessions still
+  open at the cutoff are excluded and counted in `excluded_open_sessions`;
+  `--include-open` includes them, which is why that flag is documented as
+  non-reproducible. Without the closure test, a live session's growing transcript
+  and cumulative cost would make every re-run differ.
 
 `samples/rollup-demo.json` is rebuilt from `fixtures/make_rollup_db.py` in
 `tests/test_rollup.py`; if the fixture or the aggregation changes, that test
@@ -151,7 +159,8 @@ beyond the one section that reads `latest.json`.
 
 ## Known edges
 
-- A session that spans a window boundary is counted in the window it started in.
+- A session that spans a window boundary is counted once, in the window it
+  started in; a session still open at the cutoff is excluded and counted.
 - A session with no usage rows understates per-model cost; the reconciliation
   names it rather than estimating.
 - A tool with fewer than five timed calls cannot rank as slow; `clarify` never

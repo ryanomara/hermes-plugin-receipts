@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import __version__
-from .dbio import ReceiptsError, db_identity, hermes_home, open_ro, state_db_path
+from .dbio import ReceiptsError, hermes_home, open_ro, state_db_path
 from .manifest import (
     _build_nodes,
     _clip,
@@ -485,14 +485,37 @@ def _pct(delta, previous):
 # --------------------------------------------------------------------------- #
 
 
-def _window_session_ids(conn, start: float, end: float) -> list[str]:
+def _window_session_ids(conn, start: float, end: float, include_open: bool = False) -> list[str]:
+    """Sessions that started in the window and had *closed* by its end.
+
+    The closure test is what makes a pinned window byte-stable: a session still
+    being written at the cutoff would otherwise contribute new messages (and a
+    larger cumulative cost) to every re-run.  ``include_open`` exists for live
+    inspection and is documented as non-deterministic.
+    """
+    closed_clause = "" if include_open else (
+        "AND COALESCE(ended_at, last_activity_at, started_at) <= ? ")
+    params = [start, end]
+    if closed_clause:
+        params.append(end)
     rows = conn.execute(
         "SELECT id FROM sessions WHERE started_at >= ? AND started_at < ? "
+        + closed_clause +
         "AND COALESCE(hidden, 0) = 0 AND COALESCE(message_count, 0) > 0 "
         "ORDER BY started_at ASC, id ASC",
-        (start, end),
+        tuple(params),
     ).fetchall()
     return [r["id"] for r in rows]
+
+
+def _count_open_sessions(conn, start: float, end: float) -> int:
+    row = conn.execute(
+        "SELECT COUNT(*) AS n FROM sessions WHERE started_at >= ? AND started_at < ? "
+        "AND COALESCE(ended_at, last_activity_at, started_at) > ? "
+        "AND COALESCE(hidden, 0) = 0 AND COALESCE(message_count, 0) > 0",
+        (start, end, end),
+    ).fetchone()
+    return int(row["n"] or 0) if row else 0
 
 
 def _usage_for(conn, session_ids: list[str]) -> list[dict]:
@@ -660,8 +683,10 @@ def _summarise_nodes(nodes: list[dict], attribution: dict, cards: dict) -> dict:
     }
 
 
-def _analyse_window(conn, start: float, end: float, cards: dict, board: str | None) -> dict:
-    session_ids = _window_session_ids(conn, start, end)
+def _analyse_window(conn, start: float, end: float, cards: dict, board: str | None,
+                    include_open: bool = False) -> dict:
+    session_ids = _window_session_ids(conn, start, end, include_open)
+    excluded_open = 0 if include_open else _count_open_sessions(conn, start, end)
     metas = {sid: _session_meta(conn, sid) for sid in session_ids}
     attribution = attribute_sessions(conn, session_ids, metas, cards)
 
@@ -762,6 +787,8 @@ def _analyse_window(conn, start: float, end: float, cards: dict, board: str | No
                    "start_iso": _iso(start), "end_iso": _iso(end),
                    "days": round((end - start) / 86400.0, 3)},
         "sessions": len(session_ids),
+        "excluded_open_sessions": excluded_open,
+        "included_open": bool(include_open),
         "nodes": len(nodes),
         "tool_calls": len(nodes),
         "failures": summary["failures"],
@@ -952,7 +979,8 @@ def render_json(payload: dict) -> str:
 
 
 def build_rollup(since: str = "7d", board: str | None = None, as_of: str | None = None,
-                 db_path: Path | None = None, kanban_home_path: Path | None = None) -> dict:
+                 db_path: Path | None = None, kanban_home_path: Path | None = None,
+                 include_open: bool = False) -> dict:
     """Read the store and return the complete rollup payload."""
     db_path = Path(db_path) if db_path is not None else state_db_path()
     if not db_path.exists():
@@ -971,9 +999,9 @@ def build_rollup(since: str = "7d", board: str | None = None, as_of: str | None 
             raise ReceiptsError(f"No kanban board named {slug!r}. Known boards: {known}.")
 
     with open_ro(db_path) as conn:
-        current = _analyse_window(conn, window["start"], window["end"], cards, board)
+        current = _analyse_window(conn, window["start"], window["end"], cards, board, include_open)
         previous = _analyse_window(conn, window["previous"]["start"], window["previous"]["end"],
-                                   cards, board)
+                                   cards, board, include_open)
 
     payload = {
         "schema_version": ROLLUP_SCHEMA_VERSION,
@@ -994,11 +1022,18 @@ def build_rollup(since: str = "7d", board: str | None = None, as_of: str | None 
             "previous_label": window["previous"]["label"],
             "previous_week": _week_label(previous_midpoint),
         },
-        "source": dict(db_identity(db_path), kanban_home=str(kanban_home_path or kanban_home())),
+        "source": {
+            "path": str(db_path),
+            "kanban_home": str(kanban_home_path or kanban_home()),
+            "mode": "read-only",
+            "store_metadata": "excluded — size and mtime change while the agent runs",
+        },
         "boards": [{"slug": b["slug"], "name": b["name"], "cards": len(b["tasks"]),
                     "error": b["error"]} for b in (boards[k] for k in sorted(boards))],
         "scope": {
             "sessions": current["sessions"],
+            "excluded_open_sessions": current["excluded_open_sessions"],
+            "previous_excluded_open_sessions": previous["excluded_open_sessions"],
             "tool_calls": current["tool_calls"],
             "distinct_tools": current["distinct_tools"],
             "distinct_cards": current["distinct_cards"],

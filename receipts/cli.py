@@ -75,6 +75,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("--kanban-home", dest="kanban_home",
                         help="rollup: kanban home holding boards/<slug>/kanban.db "
                              "(default: <hermes home>/kanban)")
+    parser.add_argument("--include-open", dest="include_open", action="store_true",
+                        help="rollup: include sessions still open at the cutoff (non-deterministic)")
     return parser
 
 
@@ -116,6 +118,7 @@ def run_rollup(args: argparse.Namespace, db: Path) -> int:
         as_of=getattr(args, "as_of", None),
         db_path=db,
         kanban_home_path=kanban,
+        include_open=getattr(args, "include_open", False),
     )
 
     if getattr(args, "json", False):
@@ -165,10 +168,11 @@ def run(args: argparse.Namespace) -> int:
 
     if (getattr(args, "target", None) or "").strip().lower() == "rollup":
         return run_rollup(args, db)
-    if any(getattr(args, flag, None) for flag in ("since", "board", "as_of", "kanban_home")):
+    if any(getattr(args, flag, None) for flag in ("since", "board", "as_of", "kanban_home",
+                                                  "include_open")):
         raise ReceiptsError(
-            "--since / --board / --as-of / --kanban-home belong to the rollup target. "
-            "Try: receipts rollup --since 7d --board agency"
+            "--since / --board / --as-of / --kanban-home / --include-open belong to the rollup "
+            "target. Try: receipts rollup --since 7d --board agency"
         )
 
     manifest = build_manifest(getattr(args, "target", None), db_path=db)

@@ -19,10 +19,9 @@
   },
   "source": {
     "path": "fixtures\\.rollup-fixture\\state.db",
-    "exists": true,
-    "size_bytes": 40960,
-    "mtime": 1793923118.897998,
-    "kanban_home": "fixtures\\.rollup-fixture\\kanban"
+    "kanban_home": "fixtures\\.rollup-fixture\\kanban",
+    "mode": "read-only",
+    "store_metadata": "excluded — size and mtime change while the agent runs"
   },
   "boards": [
     {
@@ -40,6 +39,8 @@
   ],
   "scope": {
     "sessions": 5,
+    "excluded_open_sessions": 0,
+    "previous_excluded_open_sessions": 0,
     "tool_calls": 16,
     "distinct_tools": 6,
     "distinct_cards": 3,
@@ -55,6 +56,8 @@
       "days": 7.0
     },
     "sessions": 5,
+    "excluded_open_sessions": 0,
+    "included_open": false,
     "tool_calls": 16,
     "failures": 6,
     "unverified": 2,
@@ -447,6 +450,8 @@
       "days": 7.0
     },
     "sessions": 2,
+    "excluded_open_sessions": 0,
+    "included_open": false,
     "tool_calls": 3,
     "failures": 1,
     "unverified": 0,
@@ -755,7 +760,7 @@
   "headline": "5 sessions · 16 tool calls · 6 failures (37.5%) · $0.9000",
   "desk_line": "2026-W45 · top failure auth ×1 · retries 3 (100% of chains recovered) · slowest terminal p95 11.2s · cost $0.9000 · cost +181% vs prior window",
   "stability": {
-    "digest": "sha256:c394815d480f3a511178edc59ed7830e1543b37447546748beca9ee2d6453e8a",
+    "digest": "sha256:06e3b9d79694e1e887dfab5df415ca9c4147443ed2ab1f45af3c2af757398682",
     "canonical": "sha256(json/sort_keys/utf-8)",
     "timestamps": "UTC, second precision; no render clock in the payload",
     "percentile_method": "linear interpolation at (n-1)*p over observed durations"

@@ -140,7 +140,7 @@ Writes **two files** — `rollup-<start>_<end>.html` and `.json` — that answer
 4. **Retry hotspots** — cards ranked by retries, with failures, recovered chains, unresolved failures and cost.
 5. **Week over week** — the same metrics against the immediately preceding window of equal length, with deltas and percentages.
 
-**Determinism.** The window is explicit (`--as-of` pins the end), all timestamps are UTC, every ordering has a tiebreaker, money is rounded once, and nothing derives from render time. Two runs over the same closed window produce byte-identical JSON and HTML. The payload carries a SHA-256 digest of its own measurements (excluding file metadata), and `samples/rollup-demo.json` is verified to rebuild from the committed fixture in the test suite.
+**Determinism.** The window is explicit (`--as-of` pins the end), all timestamps are UTC, every ordering has a tiebreaker, money is rounded once, and nothing derives from render time. A window covers sessions that **started in it and had closed by its end**; sessions still open at the cutoff are excluded and counted (pass `--include-open` to include them, which is flagged as not reproducible). Two runs over the same closed window produce byte-identical JSON and HTML. The payload carries a SHA-256 digest of its own measurements (excluding file metadata), and `samples/rollup-demo.json` is verified to rebuild from the committed fixture in the test suite.
 
 Card attribution is evidence-based, in this order: the worker transcript's own `# Kanban task t_xxxxxxxx` header, then inheritance from `parent_session_id` (sub-agent work belongs to the parent's card), then an exact unique title match. Anything else is reported as unattributed rather than guessed.
 
@@ -172,7 +172,7 @@ The first contains a fictional checkout bug with two recovered retry chains and 
 - **Durations are wall-clock between the dispatch message and its result.** For parallel calls dispatched in one assistant message, all of them share a start time, so their durations include waiting. The artifact labels parallel groups.
 - **Cost is only as good as the recorded figures.** If a store has no `session_model_usage` rows, the spend section says so rather than estimating.
 - **Compaction can orphan results.** A tool result whose dispatch row was compacted away is rendered as an `orphan result` node instead of being dropped.
-- **A rollup assigns each session to the window it *started* in.** A session that spans a window boundary is counted once, in the earlier window, so consecutive windows never double-count it — but the tail of that work appears in the previous week.
+- **A rollup assigns each session to the window it *started* in, and only if it had closed by the window end.** A session that spans a window boundary is counted once; a session still running at the cutoff is excluded and counted separately (`--include-open` includes it, at the cost of reproducibility).
 - **Card attribution is evidence, not inference.** If a worker transcript carries no card header, no parent chain and no unique title match, its cost lands in `unattributed` rather than being assigned to a plausible card.
 - **Failure classes are finite.** The taxonomy is a fixed, ordered rule table; a genuinely new failure mode files under `tool_error` until a rule is added. That is deliberate — a class that changes meaning between weeks is not a measurement.
 - **A p95 needs a sample.** Tools with fewer than five timed calls (and `clarify`, which waits on a human) are excluded from the slow-tool ranking and listed as excluded.
