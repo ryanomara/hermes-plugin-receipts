@@ -129,7 +129,7 @@ retry hotspots, and week-over-week deltas.
   no tool collisions, security scan, no core override).
 - No self-updater, no network calls, no credentials.
 - Declared capabilities match registrations: `provides_tools: [receipts_build]`.
-- 75 stdlib tests: `python -m unittest discover -s tests`.
+- 79 stdlib tests: `python -m unittest discover -s tests`.
 
 Pinned at `<SHA>`.
 ```
@@ -172,7 +172,7 @@ slowest tools by p50/p95, retry hotspots, and week-over-week deltas.
 
 Verified:
 
-- `python -m unittest discover -s tests` → **75 tests, OK** (1 skipped: PyYAML is
+- `python -m unittest discover -s tests` → **79 tests, OK** (1 skipped: PyYAML is
   absent from the bare interpreter; the test now skips as its docstring promised).
 - `hermes plugins validate .` → *Validation passed* (all gates).
 - **Byte-stability:** two runs over the pinned fixture window produce identical

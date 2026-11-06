@@ -152,7 +152,7 @@ See [`docs/ROLLUP.md`](docs/ROLLUP.md) for the design contract and the gazette i
 python -m unittest discover -s tests -v
 ```
 
-75 tests, standard library only. Two fixtures are generated, not committed as binaries:
+79 tests, standard library only. Two fixtures are generated, not committed as binaries:
 
 ```bash
 python fixtures/make_demo_db.py fixtures/demo-state.db          # one session, the demo
@@ -194,7 +194,7 @@ receipts/
 fixtures/make_demo_db.py    synthetic single-session store
 fixtures/make_rollup_db.py  synthetic two-week, two-board store
 tests/test_receipts.py      v1 acceptance tests
-tests/test_rollup.py        v1.1 acceptance tests (75 total)
+tests/test_rollup.py        v1.1 acceptance tests (79 total)
 samples/                    committed artifacts: the receipt and the rollup digest
 docs/ROLLUP.md              rollup design contract + gazette integration
 ```

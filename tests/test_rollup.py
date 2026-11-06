@@ -315,6 +315,20 @@ class TestBoard(RollupFixture):
         with self.assertRaises(ReceiptsError):
             parse_window("not-a-duration", str(AS_OF))
 
+    def test_missing_kanban_home_is_not_an_error(self):
+        """Without board DBs the transcript header still attributes work, as unindexed."""
+        payload = build_rollup("7d", as_of=str(AS_OF), db_path=self.db,
+                               kanban_home_path=Path(self.tmp.name) / "no-kanban-here")
+        self.assertEqual(payload["boards"], [])
+        self.assertEqual(payload["current"]["sessions"], 5)
+        cards = {c["card"]: c for c in payload["current"]["by_card"]}
+        self.assertEqual(cards["t_a0000001"]["board"], "unindexed")
+        self.assertEqual(cards["t_a0000001"]["title"], "")
+        self.assertAlmostEqual(cards["t_a0000001"]["cost_usd"], 0.600000, places=6)
+        self.assertIn(None, cards)  # the desktop session has no card evidence
+        self.assertEqual(len(payload["current"]["retry_hotspots"]), 2)
+        self.assertIn("unindexed", render_rollup(payload))
+
 
 class TestStability(RollupFixture):
     def test_two_runs_are_byte_identical(self):
