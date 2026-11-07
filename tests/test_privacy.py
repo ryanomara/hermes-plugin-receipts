@@ -353,5 +353,109 @@ class RedactionAcceptance(unittest.TestCase):
         self.assertEqual(report["classes"], {"word": 1})
 
 
+# --------------------------------------------------------------------------- #
+# Rule-level coverage (added with RECEIPTS-1.2 card 1.2-e)
+# --------------------------------------------------------------------------- #
+
+#: One sample per registered rule. A rule that stops firing fails its own row;
+#: a rule added without a sample fails ``test_every_registered_rule_fires``.
+#: ``placeholder`` is protected (tested through idempotence) and ``word`` is
+#: built per pass from the list, so neither appears here.
+RULE_SAMPLES = (
+    ("private_key", PEM),
+    ("private_key_open", "-----BEGIN OPENSSH PRIVATE KEY-----\nAAAAB3NzaC1yc2EAAAADAQABAAABgQDfixture"),
+    ("url_creds", "postgres://svc:" + URL_PASSWORD + "@db.example.com:5432/app"),
+    ("url_query_secret", "https://x.example/cb?token=abc123def&x=1"),
+    ("jwt", JWT),
+    ("api_key", GH_PAT),
+    ("auth_scheme", "Bearer abcd1234efgh5678"),
+    ("authorization", "Authorization: abcd1234efgh5678"),
+    ("env_secret", "DB_PASSWORD=" + ENV_SECRET),
+    ("win_user_path", r"C:\Users\fixture\out.txt"),
+    ("posix_user_path", "/home/fixture/out.txt"),
+    ("msys_user_path", "/c/Users/fixture/out.txt"),
+    ("unc_user_path", r"\\build01\Users\fixture\out.txt"),
+    ("email", EMAIL),
+    ("ipv4", IP),
+    ("phone", PHONE),
+)
+
+
+class RuleCoverage(unittest.TestCase):
+    def test_every_registered_rule_fires(self):
+        registered = {rule.name for rule in privacy.RULES if not rule.protected}
+        self.assertEqual(registered, {name for name, _ in RULE_SAMPLES},
+                         "every rule needs a sample here, and every sample a rule")
+        classes = {rule.name: rule.cls for rule in privacy.RULES if not rule.protected}
+        for name, sample in RULE_SAMPLES:
+            with self.subTest(rule=name):
+                out, report = privacy.redact_text(sample)
+                self.assertGreaterEqual(report["rules"].get(name, 0), 1,
+                                        "rule %r did not fire: %r" % (name, report["rules"]))
+                self.assertIn(classes[name], report["classes"])
+                self.assertNotIn(sample, out,
+                                 "the sample survived its own rule: %r" % (out,))
+
+    def test_word_rule_is_claimed_last_after_every_secret_rule(self):
+        # The word list is a convenience, never a licence to eat a credential.
+        out, report = privacy.redact_text("aws " + AWS, [AWS])
+        self.assertEqual(out, "aws [secret-1]")
+        self.assertEqual(report["classes"], {"secret": 1})
+        self.assertEqual(report["words"], 1)
+
+    def test_word_matching_is_whole_word_only(self):
+        out, report = privacy.redact_text("Acmecorp Acme Acme.", ["Acme"])
+        self.assertEqual(out, "Acmecorp [word-1] [word-2].")
+        self.assertEqual(report["classes"], {"word": 2})
+
+    def test_word_matching_ignores_case_in_both_directions(self):
+        out, _ = privacy.redact_text("ACME INDUSTRIES shipped", ["acme industries"])
+        self.assertEqual(out, "[word-1] shipped")
+        out, _ = privacy.redact_text("shipped acme", ["ACME"])
+        self.assertEqual(out, "shipped [word-1]")
+
+    def test_word_rule_never_eats_a_placeholder(self):
+        out, report = privacy.redact_text("already [secret-1] here", ["secret"])
+        self.assertEqual(out, "already [secret-1] here")
+        self.assertEqual(report["total"], 0)
+        self.assertEqual(report["residual"], {})
+
+    def test_report_classes_follow_the_family_order(self):
+        _, report = privacy.redact_manifest(seeded_manifest(), WORDS)
+        self.assertEqual(list(report["classes"]),
+                         [cls for cls in privacy.CLASSES if cls in report["classes"]])
+        self.assertEqual(tuple(report["classes"]), privacy.CLASSES)
+
+    def test_report_has_no_zero_counts(self):
+        for payload, words in ((seeded_manifest(), WORDS), ({"clean": "nothing here"}, None)):
+            _, report = privacy.redact_manifest(payload, words)
+            for bucket in ("classes", "rules"):
+                for name, count in report[bucket].items():
+                    with self.subTest(bucket=bucket, name=name):
+                        self.assertGreater(count, 0)
+            for field, counts in report["fields"].items():
+                with self.subTest(field=field):
+                    self.assertTrue(counts)
+                    self.assertGreater(sum(counts.values()), 0)
+
+    def test_field_breakdown_sums_to_the_class_totals(self):
+        _, report = privacy.redact_manifest(seeded_manifest(), WORDS)
+        per_class: dict[str, int] = {}
+        for counts in report["fields"].values():
+            for cls, count in counts.items():
+                per_class[cls] = per_class.get(cls, 0) + count
+        self.assertEqual(per_class, report["classes"])
+        self.assertEqual(report["version"], privacy.REPORT_VERSION)
+
+    def test_residual_flags_a_leak_that_bypassed_the_pass(self):
+        redactor = privacy.Redactor()
+        self.assertEqual(redactor.residual({"note": "mail " + EMAIL + " now"}), {"email": 1})
+        self.assertEqual(redactor.residual({"note": "already [email-1]"}), {})
+
+    def test_leaks_reports_each_surviving_literal(self):
+        self.assertEqual(privacy.leaks({"a": EMAIL}, [EMAIL, "not-present"]), [EMAIL])
+        self.assertEqual(privacy.leaks({"a": "[email-1]"}, [EMAIL]), [])
+
+
 if __name__ == "__main__":
     unittest.main()
