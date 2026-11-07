@@ -30,7 +30,7 @@ import json
 import os
 import re
 import sys
-import time
+from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -53,6 +53,16 @@ WORDS_FILE = HERE / "redact-words.txt"
 STORE_REL = "fixtures/share-state.db"
 STORE = ROOT / STORE_REL
 SAMPLES = ROOT / "samples"
+
+# The instant these samples were first rendered. Pinned on purpose: three
+# timestamps reach the documents (the render clock, the manifest's
+# ``generated_at`` and the store's mtime, which the provenance block prints), so
+# an unpinned run rewrites all three and a re-run never reproduces the committed
+# bytes. Pinning them makes "regenerate the evidence" a no-op diff. The clock is
+# formatted in local time, so a machine in another timezone will still print a
+# different clock text; everything else is timezone-independent.
+PINNED_CLOCK_ISO = "2026-11-07T01:29:59+01:00"
+PINNED_CLOCK = int(datetime.fromisoformat(PINNED_CLOCK_ISO).timestamp())
 
 ARTIFACTS = {
     "original": SAMPLES / "receipt-original-instrument.html",
@@ -128,10 +138,14 @@ def main() -> int:
     assert words, "word list is empty"
 
     store = build_store(STORE)
-    clock = int(time.time())  # one clock for every render in this run
+    clock = PINNED_CLOCK  # pinned: see PINNED_CLOCK_ISO
     render._now_ts = lambda: float(clock)  # noqa: E731 - deterministic across the trio
+    # The provenance block prints the store's mtime, and build_store just
+    # rewrote the file, so pin that reading as well.
+    os.utime(STORE, (clock, clock))
 
     manifest = build_manifest("latest", db_path=STORE_REL)
+    manifest["generated_at"] = PINNED_CLOCK_ISO  # build_manifest read the real clock
     manifest_path = STORE_REL
 
     original = {

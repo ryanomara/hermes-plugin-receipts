@@ -68,6 +68,14 @@ what "the diff is only placeholders and the band" means here: not an eyeball
 diff, an equality check. The same check is run for the client theme using an
 in-memory original that is not committed.
 
+Re-running the two Python steps on a clean checkout reproduces the committed
+bytes: the render clock, the manifest's `generated_at` and the synthetic store's
+mtime (which the provenance block prints) are all pinned to the instant the
+samples were first rendered, so regenerating is a no-op diff. The clock is
+formatted in local time, so a machine in another timezone will print different
+clock text and differ there — nothing else in the documents depends on the
+environment.
+
 ## Verified results
 
 - **Redaction:** 51 manifest fields removed — secret ×22, e-mail ×4, phone ×4,
