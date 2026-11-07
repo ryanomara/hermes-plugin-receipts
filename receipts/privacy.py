@@ -12,7 +12,8 @@ The walk is a deep copy over dict / list / str; tuples come back as lists
 because the output is JSON-shaped. Dict keys are redacted too (a manifest keyed
 by an e-mail address must not leak it); non-string scalars pass through
 unchanged. ``words`` is either a list of extra words or a path to a word-list
-file (see :func:`load_words`).
+file (see :func:`load_words`); both forms are ordered longest-first, so a phrase
+always outranks its own prefix.
 
 Placeholders, one family per class, numbered in document order::
 
@@ -441,7 +442,13 @@ class Redactor:
         if isinstance(words, (str, Path)):
             self.words = load_words(words)
         else:
-            self.words = [word for word in (words or []) if isinstance(word, str) and word]
+            # Same order as load_words(): longest first, then casefolded. The
+            # caller's list order must not decide whether "Acme" eats the front
+            # of "Acme Industries" — the longest entry always wins.
+            self.words = sorted(
+                (word for word in (words or []) if isinstance(word, str) and word),
+                key=lambda w: (-len(w), w.casefold(), w),
+            )
         self.classes: dict[str, int] = {}
         self.rules: dict[str, int] = {}
         self.fields: dict[str, dict[str, int]] = {}

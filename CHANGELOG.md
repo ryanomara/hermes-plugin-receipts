@@ -14,8 +14,8 @@ about, and it reads as a document rather than a console.
   authorization tokens, URL credentials and query secrets, sensitive `KEY=value`
   assignments, e-mails, phone numbers, IPv4 addresses and account paths
   (`C:\Users\…`, `/home/…`, `/c/Users/…`, UNC) are replaced with numbered
-  placeholders (`[secret-1]`, `[email-1]`, `[user]`, …). The unredacted receipt
-  is never modified; the default output name gains `.redacted`.
+  placeholders (`[secret-1]`, `[email-1]`, `[user]`, …). The default output name gains
+  `.redacted`, so the plain receipt keeps its name.
 - **`.redaction.json` sidecar** beside every redacted copy: per-class, per-rule
   and per-field counts, the word-list size, the manifest timestamp and a
   post-pass residual scan. The same report is embedded in `--json` output.
@@ -25,9 +25,13 @@ about, and it reads as a document rather than a console.
   emitting an unredacted digest.
 - **`--theme client`** renders the same receipt as a paper document: `#fbfaf7`
   page, serif headings, system-sans body, monospace reserved for code, no
-  scanline texture, no masthead sweep, print rules for a clean white A4 sheet.
+  scanline texture, no masthead sweep, print rules for a clean white sheet.
   `instrument` stays the default and its output is **byte-identical** to 1.1.0
   for the same manifest.
+- **`receipts_build` tool options:** the agent tool takes the same `theme`,
+  `redact` and `redact_words` options as the CLI (defaults unchanged —
+  instrument, no redaction). A redacted call writes the sidecar and returns its
+  path with the per-class counts.
 - **Redaction notice band** on every redacted copy, in both themes: the class
   counts are declared in the document, never silent.
 - `samples/receipt-original-instrument.html`, `receipt-redacted-instrument.html`

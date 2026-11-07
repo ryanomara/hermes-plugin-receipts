@@ -19,7 +19,7 @@ from .dbio import ReceiptsError, state_db_path
 from .manifest import build_manifest
 from .render import render_html
 
-__all__ = ["main", "add_arguments", "run", "default_out_path"]
+__all__ = ["main", "add_arguments", "run", "atomic_write", "default_out_path"]
 
 
 def default_out_path(manifest: dict, redact: bool = False) -> Path:
@@ -40,7 +40,12 @@ def default_rollup_path(payload: dict) -> Path:
     return Path.cwd() / f"rollup-{window['start'][:10]}_{window['end'][:10]}.html"
 
 
-def _atomic_write(path: Path, text: str) -> None:
+def atomic_write(path: Path, text: str) -> None:
+    """Write ``text`` via a temp file in the target directory, then replace.
+
+    Shared by the CLI and the agent tool so an interrupted render can never
+    leave a half-written receipt (or sidecar) behind.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     handle, tmp = tempfile.mkstemp(prefix=".receipts-", suffix=path.suffix or ".html", dir=str(path.parent))
     try:
@@ -79,7 +84,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("--redact", action="store_true",
                         help="write a share-safe copy: secrets, emails, user paths, IPs and phones "
                              "removed, with a .redaction.json sidecar beside the copy. The default "
-                             "output name gains .redacted; the unredacted receipt is never modified")
+                             "output name gains .redacted, so the plain receipt keeps its name")
     parser.add_argument("--redact-words", dest="redact_words", metavar="PATH",
                         help="with --redact: file of extra words to remove, one per line "
                              "(blank lines and # comments ignored)")
@@ -153,8 +158,8 @@ def run_rollup(args: argparse.Namespace, db: Path) -> int:
     stem = out.with_suffix("") if out.suffix.lower() in (".html", ".json") else out
     html_path = stem.with_suffix(".html")
     json_path = stem.with_suffix(".json")
-    _atomic_write(html_path, html)
-    _atomic_write(json_path, render_rollup_json(payload))
+    atomic_write(html_path, html)
+    atomic_write(json_path, render_rollup_json(payload))
 
     if getattr(args, "quiet", False):
         print(html_path)
@@ -244,11 +249,11 @@ def run(args: argparse.Namespace) -> int:
         # A redacted run defaults to a *new* file; the unredacted receipt of the
         # same session is never overwritten.
         out = default_out_path(manifest, redact=redaction_report is not None)
-    _atomic_write(out, html)
+    atomic_write(out, html)
     sidecar = None
     if redaction_report is not None:
         sidecar = out.with_suffix(".redaction.json")
-        _atomic_write(sidecar, canonical_json(redaction_report) + "\n")
+        atomic_write(sidecar, canonical_json(redaction_report) + "\n")
 
     if getattr(args, "quiet", False):
         print(out)

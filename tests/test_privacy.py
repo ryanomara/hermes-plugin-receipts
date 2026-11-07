@@ -229,6 +229,15 @@ class RedactionAcceptance(unittest.TestCase):
         self.assertEqual(out["a"], "[word-1] and [word-2] and [word-3]")
         self.assertEqual(report["classes"], {"word": 3})
 
+    def test_word_list_order_does_not_change_the_match(self):
+        # A list is ordered like a word-list file — longest first — so the
+        # phrase beats its own prefix even when the caller passed the reverse.
+        text = {"a": "ACME Industries and Acme"}
+        forward, _ = privacy.redact_manifest(text, ["Acme Industries", "Acme"])
+        backward, _ = privacy.redact_manifest(text, ["Acme", "ACME Industries"])
+        self.assertEqual(backward, forward)
+        self.assertEqual(backward["a"], "[word-1] and [word-2]")
+
     def test_word_matches_after_an_escaped_newline(self):
         # JSON-in-a-command text: the "n" of \n must not hide the client name
         out, report = privacy.redact_manifest({"x": "names\\nAcme\\nend"}, ["Acme"])

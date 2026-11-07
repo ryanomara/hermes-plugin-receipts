@@ -74,6 +74,22 @@ If a longer cut is wanted for the typeform, the raw captures in `demo/frames/`
 regenerate it via `python demo/build_demo_v2.py`; raising the hold durations in
 `seq` past ~90 s is the only thing that would breach the cap.
 
+### 1.2 beat — before/after redaction (to insert in the next cut)
+
+**Beat 13, before the value prop.** Split screen: `receipts-<session>.html`
+(instrument, unredacted) beside `receipts-<session>.redacted.html`
+(`--redact --theme client`). The same call list on both sides; the client name
+and contact details on the right are `[word-1]` / `[email-1]` / `[phone-1]`,
+the redaction band names every class it removed, and the `.redaction.json`
+sidecar sits open alongside. Hold four seconds.
+
+> Same work. Nothing that should not travel.
+
+The delivered v2 cut predates 1.2 and does not contain this beat — it is listed
+here so a re-record from `demo/frames/` includes it. The two frames are committed:
+`samples/receipt-original-instrument.html` and
+`samples/receipt-redacted-client.html` (+ `.redaction.json`).
+
 
 ## 5. Catalog PR
 
@@ -85,16 +101,19 @@ name: receipts
 repo: <PUBLIC_REPO_URL>
 sha: <40-HEX-SHA-OF-TAGGED-COMMIT>
 title: Receipts
-description: 'Session flight recorder + weekly process digest. Turns a Hermes session, a date range, or a kanban
-  card evidence chain into one self-contained offline HTML receipt: the original ask, every tool call as a timed
-  node, failures and retries exactly as recorded, per-model token spend, and the recorded cost. `receipts rollup
-  --since 7d` aggregates a window into a deterministic digest: failure taxonomy, cost by model and card, slowest
-  tools by p50/p95, retry hotspots, and week-over-week deltas. Reads the local session store and kanban boards
-  only; no network, no credentials, no new dependencies.'
+description: "Session flight recorder + weekly process digest. Turns a Hermes session, a date range, or a
+  kanban card's evidence chain into one self-contained, offline HTML receipt: the original ask, every tool
+  call as a timed node, failures and retries exactly as recorded, per-model token spend, and the recorded
+  cost. `--redact` writes a share-safe copy with secrets, e-mails, phone numbers, IP addresses and account
+  paths removed, plus a JSON sidecar naming exactly what was removed; `--theme client` renders the same
+  receipt as a paper document for a client. `receipts rollup --since 7d` aggregates a window into a
+  deterministic weekly digest: failure taxonomy, cost by model and card, slowest tools by p50/p95, retry
+  hotspots, and week-over-week deltas. Reads the local session store and kanban boards only — no network,
+  no credentials, no new dependencies."
 maintainer: Ryan O'Mara
 tier: community
 category: observability
-version: "1.1.0"
+version: "1.2.0"
 docs_url: <PUBLIC_REPO_URL>#readme
 platforms: []
 capabilities:
@@ -116,7 +135,9 @@ Adds `receipts` to the plugin catalog.
 store into a single self-contained HTML document: the original ask, every tool
 call as a timed node, failures and retries as recorded (never collapsed into the
 success that followed), per-model token spend, and the cost Hermes recorded, with
-a reconciliation delta.
+a reconciliation delta. `--redact` writes a share-safe copy with a JSON sidecar
+naming exactly what was removed; `--theme client` renders the same document as a
+paper sheet for a client.
 
 **Why it belongs in the catalog.** It is read-only against `state.db`, stdlib-only,
 and useful to anyone who has to show what an agent did — the artefact is portable
@@ -129,7 +150,7 @@ retry hotspots, and week-over-week deltas.
   no tool collisions, security scan, no core override).
 - No self-updater, no network calls, no credentials.
 - Declared capabilities match registrations: `provides_tools: [receipts_build]`.
-- 79 stdlib tests: `python -m unittest discover -s tests`.
+- 173 stdlib tests: `python -m unittest discover -s tests`.
 
 Pinned at `<SHA>`.
 ```
@@ -156,7 +177,7 @@ Pinned at `<SHA>`.
 
 ## 8. Verified state at handoff
 
-- `python -m unittest discover -s tests` → 30 tests, OK.
+- `python -m unittest discover -s tests` → 30 tests, OK (the v1.0.0 count; current count in §10).
 - `hermes plugins validate .` → *Validation passed* (all gates).
 - `HERMES_HOME=<scratch> hermes receipts latest --db <fixture>` → artifact, 39 KB.
 - Real session read-only render → 80 tool calls, 5 failures, 210 KB.
@@ -172,8 +193,9 @@ slowest tools by p50/p95, retry hotspots, and week-over-week deltas.
 
 Verified:
 
-- `python -m unittest discover -s tests` → **79 tests, OK** (1 skipped: PyYAML is
-  absent from the bare interpreter; the test now skips as its docstring promised).
+- `python -m unittest discover -s tests` → **79 tests, OK at v1.1.0** (1 skipped: PyYAML is
+  absent from the bare interpreter; the test now skips as its docstring promised; current
+  count in §10).
 - `hermes plugins validate .` → *Validation passed* (all gates).
 - **Byte-stability:** two runs over the pinned fixture window produce identical
   JSON and HTML; `samples/rollup-demo.json` is rebuilt from the fixture inside
@@ -198,3 +220,32 @@ Not verified here:
   CLI parser path is covered by a test that parses `rollup …` through
   `receipts.plugin._setup_cli`, and the live profile was deliberately left
   unmodified (Receipts is not installed there).
+
+## 10. v1.2 — share-safe redaction + client theme (2026-11-07)
+
+Two additions, both offline and stdlib-only: a receipt can be turned into a
+share-safe copy, and it can read as a paper document rather than a console.
+
+- **Agent tool.** `receipts_build` takes `target`, `out`, `theme`
+  (`instrument`|`client`), `redact` (bool) and `redact_words` (a list of words or
+  a word-list path). Defaults are the v1.1.0 behaviour; the schema advertises all
+  five properties.
+- **CLI.** `--redact` writes a *copy* (the default name gains `.redacted`) plus a
+  `<stem>.redaction.json` sidecar; `--redact-words FILE` extends the word list and
+  requires `--redact`; `--theme client` renders the paper document.
+  `rollup --redact` exits 1 rather than emitting an unredacted digest.
+- **Docs.** README's "Sharing a receipt" states what each placeholder class
+  covers, what the sidecar contains, and the pattern-matching caveat; the catalog
+  entry above mirrors `plugin.yaml` at 1.2.0.
+
+Verified now:
+
+- `python -m unittest discover -s tests` → **173 tests, OK**, 0 skipped, ~2.8 s.
+- `hermes plugins validate .` → *Validation passed* (security scan: safe).
+- Samples offline: `samples/receipt-{original-instrument,redacted-instrument,redacted-client}.html`
+  load with 0 console messages and 0 external references; the redacted pair carries
+  the band in both themes. `docs/evidence/1.2/samples-check.json` records 51 manifest
+  fields removed, 27 visible placeholders, `residual {}`, and that the CLI reproduces
+  the committed client sample byte for byte (clock readings masked).
+- **Still owed:** the annotated `v1.2.0` tag and the public push. Both need the
+  public repo and its remote; nothing in this tree can supply either (§6, §7).
