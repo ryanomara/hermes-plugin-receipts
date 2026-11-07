@@ -10,7 +10,7 @@ Public API::
     html = render_html(build_manifest("latest"))
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __all__ = [
     "__version__",
     "build_manifest",
