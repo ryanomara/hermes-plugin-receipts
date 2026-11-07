@@ -184,12 +184,12 @@
     "redacted_instrument": {
       "path": "samples/receipt-redacted-instrument.html",
       "bytes": 32112,
-      "sha256": "ed0ba4d667a67180c67838e80d2ee43b09a3f0f99224ec80d43e392fbdb663cc"
+      "sha256": "763a1ca5ca92f9e2e29af772965864c4c360f5dd6433cf042b097a459e9bd715"
     },
     "redacted_client": {
       "path": "samples/receipt-redacted-client.html",
       "bytes": 41076,
-      "sha256": "014cbda012c022923dd3a6bed7ddfce4dbf8b4a05c1571d6dcd8750c83180ffc"
+      "sha256": "63ee97ed0cdf87a73e00c6f9bcb2610956ec7eb585ad7c575756dce83e5fb179"
     }
   },
   "checks": {
@@ -243,7 +243,7 @@
     "report_arithmetic": true,
     "band_names_every_class": true,
     "instrument_diff_is_placeholders_and_band_only": {
-      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The original receipt is unchanged.</div>",
+      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The recorded session is unchanged.</div>",
       "equal": true,
       "original_bytes": 32079,
       "redacted_bytes": 32112,
@@ -259,7 +259,7 @@
       }
     },
     "client_diff_is_placeholders_and_band_only": {
-      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The original receipt is unchanged.</div>",
+      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The recorded session is unchanged.</div>",
       "equal": true,
       "original_bytes": 41336,
       "redacted_bytes": 41076,

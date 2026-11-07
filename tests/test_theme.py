@@ -229,7 +229,7 @@ class TestRedactionBand(ThemeFixture):
                 self.assertIn('class="redact-band"', doc)
                 self.assertIn("3 item(s) removed", doc)
                 self.assertIn("secret ×3", doc)
-                self.assertIn("The original receipt is unchanged.", doc)
+                self.assertIn("The recorded session is unchanged.", doc)
 
     def test_instrument_band_rule_is_added_only_when_a_band_exists(self):
         self.assertNotIn(".redact-band{", self.i_style)

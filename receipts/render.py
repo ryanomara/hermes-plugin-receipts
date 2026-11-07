@@ -849,7 +849,7 @@ def _redaction_band(manifest: dict) -> str:
     classes = ", ".join(f"{k} ×{v}" for k, v in (report.get("classes") or {}).items())
     return ('<div class="redact-band"><b>Redacted copy.</b> '
             f'{total} item(s) removed before sharing: {esc(classes)}. '
-            'The original receipt is unchanged.</div>')
+            'The recorded session is unchanged.</div>')
 
 
 def render_document(title: str, body: str, extra_css: str = "") -> str:

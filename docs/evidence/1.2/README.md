@@ -52,12 +52,13 @@ python docs/evidence/1.2/make_share_fixture.py          # fixtures/share-state.d
 python docs/evidence/1.2/make_samples.py                # samples/ + samples-check.json
 python docs/evidence/1.2/check_offline.py               # offline-check.json (needs Chrome)
 
-# the screenshots: full page, then the two band crops
+# the full-page shot: 1.5x, window height = the page's measured height
+# (3446 CSS px for this sample; `document.documentElement.scrollHeight`)
 chrome --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1.5 \
-  --window-size=1280,3520 --screenshot=docs/evidence/1.2/client-theme.png \
+  --window-size=1280,3446 --screenshot=docs/evidence/1.2/client-theme.png \
   file:///absolute/path/samples/receipt-redacted-client.html
-# band crops: DevTools → select .redact-band → Capture node screenshot (2×),
-# or CDP Page.captureScreenshot with a clip around the element's box
+# band crops: 2x full-page shot, then crop the .redact-band box plus 12px padding
+# (or DevTools → select .redact-band → Capture node screenshot at 2x)
 ```
 
 `make_samples.py` re-runs the redaction engine over the **rendered original**
