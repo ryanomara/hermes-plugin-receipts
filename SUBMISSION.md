@@ -247,5 +247,7 @@ Verified now:
   the band in both themes. `docs/evidence/1.2/samples-check.json` records 51 manifest
   fields removed, 27 visible placeholders, `residual {}`, and that the CLI reproduces
   the committed client sample byte for byte (clock readings masked).
-- **Still owed:** the annotated `v1.2.0` tag and the public push. Both need the
-  public repo and its remote; nothing in this tree can supply either (§6, §7).
+- **Release marker:** the annotated tag `v1.2.0` on this commit — the catalogue
+  SHA is `git rev-parse v1.2.0^{commit}`.
+- **Still owed:** the public push, which needs the public repo and its remote;
+  nothing in this tree can supply either (§6, §7).
