@@ -1,0 +1,4 @@
+# Extra words removed from the 1.2 share-safe samples.
+# One entry per line; blank lines and # comments are ignored. The word rule is
+# case-insensitive and whole-word, so "Acme Industries" matches as that phrase.
+Acme Industries

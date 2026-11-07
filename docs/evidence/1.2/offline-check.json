@@ -1,0 +1,46 @@
+{
+  "chrome": "chrome.exe",
+  "method": "headless Chrome on file:// URLs; page console messages are read from INFO:CONSOLE stderr lines, the DOM from --dump-dom",
+  "files": [
+    {
+      "path": "samples/receipt-original-instrument.html",
+      "bytes": 32079,
+      "exit_code": 0,
+      "console_messages": 0,
+      "console_lines": [],
+      "dom_chars": 31185,
+      "band_present": false,
+      "nodes": 12,
+      "body_class": "",
+      "external_references": 0,
+      "ok": true
+    },
+    {
+      "path": "samples/receipt-redacted-instrument.html",
+      "bytes": 32112,
+      "exit_code": 0,
+      "console_messages": 0,
+      "console_lines": [],
+      "dom_chars": 31214,
+      "band_present": true,
+      "nodes": 12,
+      "body_class": "",
+      "external_references": 0,
+      "ok": true
+    },
+    {
+      "path": "samples/receipt-redacted-client.html",
+      "bytes": 41076,
+      "exit_code": 0,
+      "console_messages": 0,
+      "console_lines": [],
+      "dom_chars": 40178,
+      "band_present": true,
+      "nodes": 12,
+      "body_class": "class=\"theme-client\"",
+      "external_references": 0,
+      "ok": true
+    }
+  ],
+  "all_ok": true
+}

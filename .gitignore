@@ -6,6 +6,7 @@ venv/
 .manifest.json
 receipts-*.html
 fixtures/demo-state.db
+fixtures/share-state.db
 fixtures/*.db-wal
 fixtures/*.db-shm
 .pytest_cache/

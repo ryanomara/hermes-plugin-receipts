@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-07T01:29:59+01:00",
+  "total": 51,
+  "classes": {
+    "secret": 22,
+    "email": 4,
+    "phone": 4,
+    "ip": 4,
+    "user": 13,
+    "word": 4
+  },
+  "rules": {
+    "url_creds": 4,
+    "url_query_secret": 8,
+    "jwt": 4,
+    "api_key": 2,
+    "env_secret": 4,
+    "win_user_path": 5,
+    "posix_user_path": 4,
+    "msys_user_path": 4,
+    "email": 4,
+    "ipv4": 4,
+    "phone": 4,
+    "word": 4
+  },
+  "fields": {
+    "$.sessions[0].cwd": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[0].payload.text": {
+      "word": 1
+    },
+    "$.sessions[0].timeline[1].payload.result_excerpt": {
+      "secret": 3
+    },
+    "$.sessions[0].timeline[2].payload.args_summary": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[2].payload.args_detail": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[3].payload.args_summary": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[3].payload.args_detail": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[4].payload.args_summary": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[4].payload.args_detail": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[5].payload.result_summary": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[5].payload.result_excerpt": {
+      "secret": 1
+    },
+    "$.sessions[0].timeline[6].payload.args_summary": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[6].payload.args_detail": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[7].payload.args_summary": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[7].payload.args_detail": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[8].payload.args_summary": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[8].payload.args_detail": {
+      "user": 1
+    },
+    "$.sessions[0].timeline[9].payload.args_summary": {
+      "ip": 1
+    },
+    "$.sessions[0].timeline[9].payload.args_detail": {
+      "ip": 1
+    },
+    "$.sessions[0].timeline[11].payload.args_summary": {
+      "email": 1,
+      "phone": 1
+    },
+    "$.sessions[0].timeline[11].payload.args_detail": {
+      "email": 1,
+      "phone": 1
+    },
+    "$.sessions[0].timeline[13].payload.text": {
+      "word": 1
+    },
+    "$.nodes[0].result_excerpt": {
+      "secret": 3
+    },
+    "$.nodes[1].args_summary": {
+      "secret": 1
+    },
+    "$.nodes[1].args_detail": {
+      "secret": 1
+    },
+    "$.nodes[2].args_summary": {
+      "secret": 1
+    },
+    "$.nodes[2].args_detail": {
+      "secret": 1
+    },
+    "$.nodes[3].args_summary": {
+      "secret": 1
+    },
+    "$.nodes[3].args_detail": {
+      "secret": 1
+    },
+    "$.nodes[4].result_summary": {
+      "secret": 1
+    },
+    "$.nodes[4].result_excerpt": {
+      "secret": 1
+    },
+    "$.nodes[5].args_summary": {
+      "user": 1
+    },
+    "$.nodes[5].args_detail": {
+      "user": 1
+    },
+    "$.nodes[6].args_summary": {
+      "user": 1
+    },
+    "$.nodes[6].args_detail": {
+      "user": 1
+    },
+    "$.nodes[7].args_summary": {
+      "user": 1
+    },
+    "$.nodes[7].args_detail": {
+      "user": 1
+    },
+    "$.nodes[8].args_summary": {
+      "ip": 1
+    },
+    "$.nodes[8].args_detail": {
+      "ip": 1
+    },
+    "$.nodes[10].args_summary": {
+      "email": 1,
+      "phone": 1
+    },
+    "$.nodes[10].args_detail": {
+      "email": 1,
+      "phone": 1
+    },
+    "$.asks[0].text": {
+      "word": 1
+    },
+    "$.answers[0].text": {
+      "word": 1
+    }
+  },
+  "words": 1,
+  "residual": {}
+}

@@ -1,0 +1,288 @@
+{
+  "generated_at": "2026-11-07T01:29:59+01:00",
+  "render_clock": 1794011399,
+  "store": "fixtures/share-state.db",
+  "word_list": "docs/evidence/1.2/redact-words.txt",
+  "words_loaded": 1,
+  "session": {
+    "id": "local-4b7e2d91share",
+    "title": "Spring landing page — deploy staging, rotate credentials, hand off",
+    "tool_calls": 12,
+    "failures": 1,
+    "retries": 1
+  },
+  "redaction": {
+    "version": 1,
+    "generated_at": "2026-11-07T01:29:59+01:00",
+    "total": 51,
+    "classes": {
+      "secret": 22,
+      "email": 4,
+      "phone": 4,
+      "ip": 4,
+      "user": 13,
+      "word": 4
+    },
+    "rules": {
+      "url_creds": 4,
+      "url_query_secret": 8,
+      "jwt": 4,
+      "api_key": 2,
+      "env_secret": 4,
+      "win_user_path": 5,
+      "posix_user_path": 4,
+      "msys_user_path": 4,
+      "email": 4,
+      "ipv4": 4,
+      "phone": 4,
+      "word": 4
+    },
+    "fields": {
+      "$.sessions[0].cwd": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[0].payload.text": {
+        "word": 1
+      },
+      "$.sessions[0].timeline[1].payload.result_excerpt": {
+        "secret": 3
+      },
+      "$.sessions[0].timeline[2].payload.args_summary": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[2].payload.args_detail": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[3].payload.args_summary": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[3].payload.args_detail": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[4].payload.args_summary": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[4].payload.args_detail": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[5].payload.result_summary": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[5].payload.result_excerpt": {
+        "secret": 1
+      },
+      "$.sessions[0].timeline[6].payload.args_summary": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[6].payload.args_detail": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[7].payload.args_summary": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[7].payload.args_detail": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[8].payload.args_summary": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[8].payload.args_detail": {
+        "user": 1
+      },
+      "$.sessions[0].timeline[9].payload.args_summary": {
+        "ip": 1
+      },
+      "$.sessions[0].timeline[9].payload.args_detail": {
+        "ip": 1
+      },
+      "$.sessions[0].timeline[11].payload.args_summary": {
+        "email": 1,
+        "phone": 1
+      },
+      "$.sessions[0].timeline[11].payload.args_detail": {
+        "email": 1,
+        "phone": 1
+      },
+      "$.sessions[0].timeline[13].payload.text": {
+        "word": 1
+      },
+      "$.nodes[0].result_excerpt": {
+        "secret": 3
+      },
+      "$.nodes[1].args_summary": {
+        "secret": 1
+      },
+      "$.nodes[1].args_detail": {
+        "secret": 1
+      },
+      "$.nodes[2].args_summary": {
+        "secret": 1
+      },
+      "$.nodes[2].args_detail": {
+        "secret": 1
+      },
+      "$.nodes[3].args_summary": {
+        "secret": 1
+      },
+      "$.nodes[3].args_detail": {
+        "secret": 1
+      },
+      "$.nodes[4].result_summary": {
+        "secret": 1
+      },
+      "$.nodes[4].result_excerpt": {
+        "secret": 1
+      },
+      "$.nodes[5].args_summary": {
+        "user": 1
+      },
+      "$.nodes[5].args_detail": {
+        "user": 1
+      },
+      "$.nodes[6].args_summary": {
+        "user": 1
+      },
+      "$.nodes[6].args_detail": {
+        "user": 1
+      },
+      "$.nodes[7].args_summary": {
+        "user": 1
+      },
+      "$.nodes[7].args_detail": {
+        "user": 1
+      },
+      "$.nodes[8].args_summary": {
+        "ip": 1
+      },
+      "$.nodes[8].args_detail": {
+        "ip": 1
+      },
+      "$.nodes[10].args_summary": {
+        "email": 1,
+        "phone": 1
+      },
+      "$.nodes[10].args_detail": {
+        "email": 1,
+        "phone": 1
+      },
+      "$.asks[0].text": {
+        "word": 1
+      },
+      "$.answers[0].text": {
+        "word": 1
+      }
+    },
+    "words": 1,
+    "residual": {}
+  },
+  "documents": {
+    "original_instrument": {
+      "path": "samples/receipt-original-instrument.html",
+      "bytes": 32079,
+      "sha256": "4c2120bee056041809ff25f24e2c5cf5815d03061de7f0f3b65d2dd92dfdc5a8"
+    },
+    "redacted_instrument": {
+      "path": "samples/receipt-redacted-instrument.html",
+      "bytes": 32112,
+      "sha256": "ed0ba4d667a67180c67838e80d2ee43b09a3f0f99224ec80d43e392fbdb663cc"
+    },
+    "redacted_client": {
+      "path": "samples/receipt-redacted-client.html",
+      "bytes": 41076,
+      "sha256": "014cbda012c022923dd3a6bed7ddfce4dbf8b4a05c1571d6dcd8750c83180ffc"
+    }
+  },
+  "checks": {
+    "no_literal_survives": true,
+    "seeded_values": {
+      "slack_token": {
+        "reached_document": false,
+        "in_redacted_document": false
+      },
+      "stripe_secret": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "webhook_secret": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "db_password": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "bearer": {
+        "reached_document": false,
+        "in_redacted_document": false
+      },
+      "query_token": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "jwt": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "email": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "phone": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "ip": {
+        "reached_document": true,
+        "in_redacted_document": false
+      },
+      "word": {
+        "reached_document": true,
+        "in_redacted_document": false
+      }
+    },
+    "report_arithmetic": true,
+    "band_names_every_class": true,
+    "instrument_diff_is_placeholders_and_band_only": {
+      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The original receipt is unchanged.</div>",
+      "equal": true,
+      "original_bytes": 32079,
+      "redacted_bytes": 32112,
+      "band_bytes": 186,
+      "css_bytes_removed": 293,
+      "placeholders_visible": {
+        "word": 3,
+        "secret": 11,
+        "user": 7,
+        "ip": 2,
+        "email": 2,
+        "phone": 2
+      }
+    },
+    "client_diff_is_placeholders_and_band_only": {
+      "band": "<div class=\"redact-band\"><b>Redacted copy.</b> 51 item(s) removed before sharing: secret ×22, email ×4, phone ×4, ip ×4, user ×13, word ×4. The original receipt is unchanged.</div>",
+      "equal": true,
+      "original_bytes": 41336,
+      "redacted_bytes": 41076,
+      "band_bytes": 186,
+      "css_bytes_removed": 0,
+      "placeholders_visible": {
+        "word": 3,
+        "secret": 11,
+        "user": 7,
+        "ip": 2,
+        "email": 2,
+        "phone": 2
+      }
+    },
+    "cli_render_matches_sample": true,
+    "cli_sidecar_matches_sample": true,
+    "sidecar_matches_instrument_report": true,
+    "author_home_absent": true
+  },
+  "document_placeholders_vs_manifest_fields": {
+    "manifest_fields_removed": 51,
+    "visible_in_instrument_document": 27,
+    "note": "The sidecar and band count manifest fields. The manifest stores each call twice (timeline event + flow node) and its arguments twice (summary + detail), so the document prints fewer placeholders than the report counts. Both numbers are reported here so the sample cannot be read as claiming one equals the other."
+  },
+  "all_passed": true
+}
