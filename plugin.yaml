@@ -1,4 +1,4 @@
-name: receipts
+name: session-receipts
 version: 1.2.0
 description: "Session flight recorder + weekly process digest. Turns a Hermes session, a date range, or a kanban card's evidence chain into one self-contained, offline HTML receipt: the original ask, every tool call as a timed node, failures and retries exactly as recorded, per-model token spend, and the recorded cost. `--redact` writes a share-safe copy with secrets, e-mails, phone numbers, IP addresses and account paths removed, plus a JSON sidecar naming exactly what was removed; `--theme client` renders the same receipt as a paper document for a client. `receipts rollup --since 7d` aggregates a window into a deterministic weekly digest: failure taxonomy, cost by model and card, slowest tools by p50/p95, retry hotspots, and week-over-week deltas. Reads the local session store and kanban boards only — no network, no credentials, no new dependencies."
 author: "Ryan O'Mara"
