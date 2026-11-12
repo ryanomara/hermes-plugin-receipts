@@ -19,11 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "demo" / "audio"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# FAL_KEY from the Hermes .env, never printed
-for line in Path.home() / "AppData" / "Local" / "hermes" / ".env".read_text().splitlines():
-    if line.startswith("FAL_KEY="):
-        os.environ["FAL_KEY"] = line.split("=", 1)[1].strip()
-        break
+# FAL_KEY must already be in the environment (never read the Hermes .env
+# from the shipped tree — PR #152953 review). Export it in the shell:
+#   export FAL_KEY=$(grep -m1 '^FAL_KEY=' ~/AppData/Local/hermes/.env | cut -d= -f2-)
+if not os.environ.get("FAL_KEY"):
+    raise SystemExit("FAL_KEY is not set. Export it before running this demo generator.")
 
 import fal_client  # noqa: E402
 

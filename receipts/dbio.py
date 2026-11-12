@@ -30,13 +30,11 @@ class ReceiptsError(RuntimeError):
 def hermes_home() -> Path:
     """Resolve the active Hermes home, profile-aware.
 
-    Order: ``$HERMES_HOME`` (set by the runtime per profile) -> the core
-    resolver -> the platform default.  Never hardcode ``~/.hermes`` as *the*
-    home; a profile keeps its state somewhere else entirely.
+    Core resolver FIRST (PR #152953 review): inside a gateway serving several
+    profiles, ``$HERMES_HOME`` holds the LAUNCH profile — reading it first lets
+    one profile's receipt render another profile's sessions. The env var is
+    only a standalone fallback. Never hardcode ``~/.hermes`` as *the* home.
     """
-    env = os.environ.get("HERMES_HOME")
-    if env:
-        return Path(env).expanduser()
     try:  # core resolver, when running inside Hermes
         from hermes_constants import get_hermes_home  # type: ignore
 
@@ -45,6 +43,9 @@ def hermes_home() -> Path:
             return Path(resolved)
     except Exception:
         pass
+    env = os.environ.get("HERMES_HOME")
+    if env:
+        return Path(env).expanduser()
     if os.name == "nt":
         base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
         return Path(base) / "hermes"

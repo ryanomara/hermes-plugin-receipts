@@ -3,6 +3,33 @@
 All notable changes to Receipts. The plugin is stdlib-only and offline by
 design; nothing below adds a network call, a credential or a dependency.
 
+## 1.2.1 — 2026-11-12
+
+PR #152953 security review (Teknium) — the tool boundary is now confined.
+
+### Changed
+
+- `receipts_build` `out`: absolute, `~` and `..`-traversal paths are no
+  longer honoured at their target — the filename is reused inside
+  `plugin-data/session-receipts/` under the profile-correct Hermes home.
+  Relative names keep the CLI's cwd behaviour. A platform file-safety
+  denial (`agent.file_safety.is_write_denied`) refuses the write when a
+  safety layer exists.
+- `redact_words` from the tool accepts ONLY a list of strings. Word-list
+  file paths are a CLI-only form and are a clean error from the tool.
+- `hermes_home()` consults `hermes_constants.get_hermes_home()` FIRST;
+  `$HERMES_HOME` is a standalone fallback only, so a multi-profile gateway
+  can no longer render another profile's sessions.
+- The tool resolves the session store as the active profile's
+  `state.db` — `RECEIPTS_DB` redirection is CLI/tests-only.
+- `demo/gen_audio.py` no longer reads the Hermes `.env` from the shipped
+  tree; `FAL_KEY` must be exported by the caller.
+
+### Added
+
+- `tests/test_tool_confinement.py` — out-path confinement, word-list form
+  rejection, resolver ordering, and tool-db non-redirection.
+
 ## 1.2.0 — 2026-11-07
 
 Share-safe and client-facing: a receipt can now be sent to the person it is

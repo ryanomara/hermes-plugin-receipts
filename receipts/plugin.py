@@ -14,10 +14,37 @@ from pathlib import Path
 
 from . import __version__
 from .cli import add_arguments, atomic_write, default_out_path, run
-from .dbio import ReceiptsError
+from .dbio import ReceiptsError, hermes_home
 from .manifest import build_manifest
 from .privacy import canonical_json, load_words, redact_manifest
 from .render import render_html
+
+
+def _tool_data_dir() -> Path:
+    """The ONLY directory the tool may write into: plugin-data under the
+    profile-correct Hermes home (PR #152953 review)."""
+    return hermes_home() / "plugin-data" / "session-receipts"
+
+
+def _tool_safe_out(raw: str | None) -> Path | None:
+    """Confine a tool-supplied ``out`` argument.
+
+    Absolute paths, ``~`` paths and any ``..`` traversal are NOT honoured at
+    their target — the filename is reused inside the plugin data dir. Relative
+    names stay in the agent's cwd, matching the human CLI's behaviour.
+    """
+    if not raw:
+        return None
+    p = Path(raw)
+    # p.anchor is non-empty for drive- AND root-anchored paths (POSIX-style
+    # "/etc/..." is NOT is_absolute() on Windows but must still be confined).
+    if p.is_absolute() or p.anchor or raw.startswith("~") or ".." in p.parts:
+        safe = _tool_data_dir()
+        name = p.name or "receipt.html"
+        if name in ("", ".", "..") or ".." in Path(name).parts:
+            name = "receipt.html"
+        return safe / name
+    return Path.cwd() / p
 
 logger = logging.getLogger(__name__)
 
@@ -96,17 +123,18 @@ def _error(message: str) -> str:
 
 
 def _tool_words(value) -> list[str]:
-    """Word list from a tool argument: a list of words, or a path (CLI parity)."""
+    """Word list from a tool argument: a list of strings ONLY.
+
+    File paths are a CLI affordance — a prompt-injected tool call must not be
+    able to read arbitrary files by passing a path here (PR #152953 review).
+    """
     if not value:
         return []
     if isinstance(value, str):
-        try:
-            return load_words(value)
-        except OSError as exc:
-            reason = getattr(exc, "strerror", None) or exc
-            raise ReceiptsError(f"cannot read redact_words file {value!s}: {reason}") from exc
-        except UnicodeDecodeError as exc:
-            raise ReceiptsError(f"redact_words file {value!s} is not UTF-8 text") from exc
+        raise ReceiptsError(
+            "redact_words must be a list of strings from the tool; "
+            "word-list FILE paths are a CLI-only form"
+        )
     if isinstance(value, (list, tuple)):
         words = []
         for entry in value:
@@ -147,7 +175,10 @@ def receipts_build(args: dict | None = None, **_kwargs) -> str:
             )
         words = _tool_words(args.get("redact_words"))
 
-        manifest = build_manifest(target)
+        # Tool path is confined: RECEIPTS_DB env redirection is a CLI/tests
+        # affordance — the tool always reads the active profile's store
+        # (PR #152953 review).
+        manifest = build_manifest(target, db_path=hermes_home() / "state.db")
 
         # Redact the manifest before rendering, exactly as the CLI does: the
         # document, the sidecar and this response describe the same data, and
@@ -161,13 +192,22 @@ def receipts_build(args: dict | None = None, **_kwargs) -> str:
         html = render_html(manifest, theme=theme)
 
         if out_arg:
-            out = Path(out_arg).expanduser()
-            if not out.is_absolute():
-                out = Path.cwd() / out
+            out = _tool_safe_out(out_arg)
         else:
             # A redacted run defaults to a *new* file; the unredacted receipt of
             # the same session is never overwritten.
             out = default_out_path(manifest, redact=report is not None)
+        if out is not None:
+            # Refuse any target the platform's file-safety layer denies, when
+            # one exists (PR #152953 review).
+            try:
+                from agent.file_safety import is_write_denied  # type: ignore
+
+                if is_write_denied(str(out)):
+                    return _error("out path denied by file safety")
+            except Exception:
+                pass
+            out.parent.mkdir(parents=True, exist_ok=True)
 
         atomic_write(out, html)
 

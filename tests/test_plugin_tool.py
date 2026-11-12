@@ -221,17 +221,19 @@ class TestRedaction(ToolFixture):
         self.assertEqual(report["classes"]["word"], 1)
         self.assertNotIn(WORD, self.read("copy.html"))
 
-    def test_word_list_as_a_path_matches_the_list_form(self):
+    def test_word_list_as_a_path_is_rejected_from_the_tool(self):
+        # PR #152953: the TOOL accepts only a list of strings. The word-list
+        # FILE form is a CLI affordance and must be a clean error here.
         manifest = seeded(self.manifest)
         Path("words.txt").write_text("# client names\n\n%s\n" % WORD, encoding="utf-8")
         as_list = self.call(manifest, redact=True, redact_words=[WORD], out="a.html")
         as_path = self.call(manifest, redact=True, redact_words="words.txt", out="b.html")
         self.assertTrue(as_list["ok"], as_list)
-        self.assertTrue(as_path["ok"], as_path)
-        self.assertEqual(Path("a.html").read_bytes(), Path("b.html").read_bytes())
-        self.assertEqual(Path("a.redaction.json").read_bytes(),
-                         Path("b.redaction.json").read_bytes())
-        self.assertEqual(json.loads(self.read("b.redaction.json"))["words"], 1)
+        self.assertFalse(as_path["ok"])
+        self.assertIn("CLI-only", as_path["error"])
+        self.assertEqual(
+            [f for f in self.files() if f != "words.txt"], ["a.html", "a.redaction.json"]
+        )
 
 
 class TestCleanErrors(ToolFixture):
@@ -244,7 +246,7 @@ class TestCleanErrors(ToolFixture):
     def test_unreadable_word_list_is_a_clean_error(self):
         result = self.call(redact=True, redact_words="nope.txt")
         self.assertFalse(result["ok"])
-        self.assertIn("cannot read redact_words file", result["error"])
+        self.assertIn("CLI-only", result["error"])
         self.assertEqual(self.files(), [])
 
     def test_word_list_of_the_wrong_type_is_a_clean_error(self):
