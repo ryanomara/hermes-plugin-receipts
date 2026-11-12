@@ -251,3 +251,13 @@ Verified now:
   SHA is `git rev-parse v1.2.0^{commit}`.
 - **Still owed:** the public push, which needs the public repo and its remote;
   nothing in this tree can supply either (§6, §7).
+
+## Review round 1 (2026-11-12, PR #152953)
+
+Teknium requested changes at c7df9d35: four tool-boundary blockers. All fixed
+in v1.2.1 (sha 54088cdea3c808dda31406c18690ec27b7b882bc), catalog re-pinned,
+181 tests green. Fixes: out-path confinement into plugin-data/session-receipts
++ file-safety denial; redact_words tool form is list-only (file form CLI-only);
+hermes_home() resolves via hermes_constants first (env fallback standalone
+only, tool ignores RECEIPTS_DB); demo/gen_audio.py no longer reads the Hermes
+.env. See CHANGELOG 1.2.1 and tests/test_tool_confinement.py.
