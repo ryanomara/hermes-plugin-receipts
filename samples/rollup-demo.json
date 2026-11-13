@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "rollup",
-  "tool_version": "1.2.0",
+  "tool_version": "1.2.1",
   "board": null,
   "window": {
     "since": "7d",
@@ -760,7 +760,7 @@
   "headline": "5 sessions · 16 tool calls · 6 failures (37.5%) · $0.9000",
   "desk_line": "2026-W45 · top failure auth ×1 · retries 3 (100% of chains recovered) · slowest terminal p95 11.2s · cost $0.9000 · cost +181% vs prior window",
   "stability": {
-    "digest": "sha256:8bff022a6448cac026b43b29f01578c7de41a4afd77adfea94c411164ce520d3",
+    "digest": "sha256:ac438261b9c2c1ee156a357a620c99feb5604bb5f9e98a0c0928bee0d7e820b4",
     "canonical": "sha256(json/sort_keys/utf-8)",
     "timestamps": "UTC, second precision; no render clock in the payload",
     "percentile_method": "linear interpolation at (n-1)*p over observed durations"
