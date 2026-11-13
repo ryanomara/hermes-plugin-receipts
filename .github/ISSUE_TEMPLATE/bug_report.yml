@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in a receipt, the digest, or the CLI behaves unexpectedly
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for using session-receipts. The plugin is offline by design —
+        please include the details below so the issue can be reproduced.
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened
+      description: The command or tool call, and what you saw vs. what you expected
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command / tool arguments
+      description: e.g. `receipts build --since 3d --redact` or the tool call JSON
+  - type: input
+    id: platform
+    attributes:
+      label: OS
+      placeholder: Windows 11 / macOS 15 / Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: hermes_version
+    attributes:
+      label: Hermes version
+      placeholder: from `hermes --version`
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin version
+      placeholder: e.g. 1.2.1 — shown in the receipt footer
+  - type: textarea
+    id: error
+    attributes:
+      label: Error output
+      description: Traceback or tool error, redacted if it contains anything sensitive
+      render: text
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Redact session content before pasting — receipts may contain sensitive material

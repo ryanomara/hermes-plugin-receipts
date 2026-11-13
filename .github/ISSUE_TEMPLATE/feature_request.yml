@@ -1,0 +1,26 @@
+name: Feature request
+description: A new capability for receipts, the digest, or the CLI
+title: "[feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should exist that does not, and when you would use it
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: Workaround today
+      description: What you do instead, if anything
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints to keep
+      description: The plugin is stdlib-only, offline, and reads the session store read-only. Which of these must the feature keep?
+      options:
+        - label: No network calls
+        - label: No new dependencies
+        - label: Read-only access to Hermes state
